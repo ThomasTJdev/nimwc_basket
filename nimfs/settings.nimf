@@ -1,0 +1,303 @@
+#? stdtmpl | standard
+#
+#
+#
+#proc genBasketLinks(): string =
+# result = ""
+<div class="has-text-centered">
+  <ul>
+    <li><a href="/basket/products/edit">Product settings</a></li>
+    <li><a href="/basket/shipping/edit">Shipping settings</a></li>
+
+    <li><a href="/basket/allreceipts">Accounting with receipts</a></li>
+    <li><a href="/basket/settings/edit">Edit company data</a></li>
+    <li><a href="/basket/pdfreceipt/login">Login to receipts</a></li>
+    <li><a href="/basket/allreceiptspdf">Receipts</a></li>
+  </ul>
+</div>
+#end proc
+#
+#proc genBasketStats(db: DbConn): string =
+# result = ""
+#
+# let buyNotchecked = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "notchecked")
+#
+# let buyAwaiting = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "awaiting")
+#
+# let buyPayed = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? AND shipped IS NOT ? ORDER BY creation;"), "payed", "true")
+#
+# let buyShipped = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? AND shipped = ? ORDER BY creation;"), "payed", "true")
+#
+# let buyCanceled = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "canceled")
+#
+# let cashPayed = getAllRows(db, sql("SELECT price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "payed")
+#
+# let cashAwaiting = getAllRows(db, sql("SELECT price, vat, productcount, valuta FROM basket_purchase WHERE payment_received IS NOT ? ORDER BY creation;"), "payed")
+#
+<div>
+    <h3>Stats</h3>
+    <table class="buy table is-bordered is-hoverable" style="width: 300px; margin-left: auto; margin-right: auto;">
+      <thead>
+        <th>Receipt</th>
+        <th>Status</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="width: 200px;">Not checked</td>
+          <td>${buyNotchecked.len()}</td>
+        </tr>
+        <tr>
+          <td>Awaiting payment</td>
+          <td>${buyAwaiting.len()}</td>
+        </tr>
+        <tr>
+          <td>Payed</td>
+          <td>${buyPayed.len()}</td>
+        </tr>
+        <tr>
+          <td>Payed & shipped</td>
+          <td>${buyShipped.len()}</td>
+        </tr>
+        <tr>
+          <td>Canceled</td>
+          <td>${buyCanceled.len()}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <table class="buy table is-bordered is-hoverable" style="width: 300px; margin-left: auto; margin-right: auto;">
+      <thead>
+        <th>Item</th>
+        <th>Cost</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="width: 200px;">Payed (w. VAT)</td>
+          <td>
+            # var cashPayedRes: int
+            # for item in cashPayed:
+            #   if item[1] != "":
+            #     cashPayedRes += (parseInt(item[0]) + parseInt(item[1])) * parseInt(item[2])
+            #   else:
+            #     cashPayedRes += parseInt(item[0]) * parseInt(item[2])
+            #   end if
+            # end for
+            ${cashPayedRes}
+          </td>
+        </tr>
+        <tr>
+          <td>Awaiting VAT</td>
+          <td>
+            # var cashPayedRes2: int
+            # for item in cashPayed:
+            #   cashPayedRes2 += parseInt(item[1]) * parseInt(item[2])
+            # end for
+            ${cashPayedRes2}
+          </td>
+        </tr>
+        <tr>
+          <td>Awaiting payments (w. VAT)</td>
+          <td>
+            # var cashAwaitingRes: int
+            # for item in cashAwaiting:
+            #   if item[1] != "":
+            #     cashAwaitingRes += (parseInt(item[0]) + parseInt(item[1])) * parseInt(item[2])
+            #   else:
+            #     cashAwaitingRes += parseInt(item[0]) * parseInt(item[2])
+            #   end if
+            # end for
+            ${cashAwaitingRes}
+          </td>
+        </tr>
+        <tr>
+          <td>Awaiting VAT</td>
+          <td>
+            # var cashAwaitingRes2: int
+            # for item in cashAwaiting:
+            #   cashAwaitingRes2 += parseInt(item[1]) * parseInt(item[2])
+            # end for
+            ${cashAwaitingRes2}
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+#end proc
+#
+#
+#proc genBuy*(db: DbConn): string =
+# result = ""
+
+<link rel="stylesheet" href="/css/basket_private.css">
+<script src="/js/basket_private.js" defer></script>
+
+<div id="buy">
+
+  <div id="buyFront">
+    <h1>Basket settings</h1>
+
+    # let (n, v, d, u) = pluginGetDetails("basket")
+    <div id="pluginDetails">
+      <hr>
+      <div> <b>Package:</b> ${n}</div>
+      <div> <b>Version:</b> ${v}</div>
+      <div> <b>Description:</b><br>${d}</div>
+      <div> <b>URL:</b> <a href="${u}">${u}</a></div>
+      <hr>
+    </div>
+
+  </div>
+
+  <br>
+
+  ${genBasketLinks()}
+
+  <hr>
+
+  ${genBasketStats(db)}
+
+
+</div>
+
+#end proc
+#
+#
+#
+#
+#
+#proc genBuyEditsettings*(db: DbConn): string =
+# result = ""
+#
+#
+# if getValue(db, sql("SELECT receipt_nr_next FROM basket_settings;")) == "":
+#   let id = insertID(db, sql("INSERT INTO basket_settings (receipt_nr_next, companyName, companyDescription, paymentMethod, countries) VALUES (?, ?, ?, ?, ?)"), "1", "", "", "", "Denmark")
+# end if
+#
+# let setMain = getRow(db, sql("SELECT receipt_nr_next, companyDescription, paymentMethod, companyName, conditions, mailOrder, mailShipped, countries FROM basket_settings;"))
+#
+#
+<link rel="stylesheet" href="/css/basket_private.css">
+
+<div id="buy">
+
+  <div id="buyBought">
+
+    <h1>Edit company settings</h1>
+
+    <form method="POST" action="/basket/editsettings/main">
+      <label>Receipt nr</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" name="receipt_nr_next" class="input is-info" value="${setMain[0]}">
+        </div>
+      </div>
+
+      <label>Company name</label>
+      <div class="field">
+        <div class="control">
+          <input type="text" name="companyName" class="input is-info" value="${setMain[3]}">
+        </div>
+      </div>
+
+      <label>Company description(address, company id, etc.)</label>
+      <div class="field">
+        <div class="control">
+          <textarea type="text" name="companyDescription" class="textarea is-info" >${setMain[1]}</textarea>
+        </div>
+      </div>
+
+      <label>Payment method (bank number, days to pay, etc.)</label>
+      <div class="field">
+        <div class="control">
+          <textarea type="text" name="paymentMethod" class="textarea is-info" >${setMain[2]}</textarea>
+        </div>
+      </div>
+
+      <label>Shipping countries (1 per line)</label>
+      <div class="field">
+        <div class="control">
+          <textarea type="text" name="countries" class="textarea is-info" >${setMain[7]}</textarea>
+        </div>
+      </div>
+
+      <label>Conditions</label>
+      <div class="field">
+        <div class="control">
+          <textarea type="text" name="conditions" class="textarea is-info" >${setMain[4]}</textarea>
+        </div>
+      </div>
+
+      <label>Mails</label>
+      <div>
+        <label class="checkbox">
+          # if setMain[5] == "true":
+          <input type="checkbox" name="mailOrder" checked>
+          # else:
+          <input type="checkbox" name="mailOrder">
+          # end if
+          Send an email to customer when ordering.
+        </label>
+
+        <label class="checkbox">
+          # if setMain[6] == "true":
+          <input type="checkbox" name="mailShipped" checked>
+          # else:
+          <input type="checkbox" name="mailShipped">
+          # end if
+          Send an email to customer when order is shipped.
+        </label>
+      </div>
+
+      <br>
+
+      <button type="submit" class="button is-success" style="width: 200px;">Save</button>
+    </form>
+
+    <hr>
+
+  </div>
+
+</div>
+
+#end proc
+#
+#
+#
+#
+#
+#proc genBuyAllReceiptsPdf*(db: DbConn): string =
+# result = ""
+<link rel="stylesheet" href="/css/basket_private.css">
+
+<div id="buy">
+
+  <div id="allReceiptsPdf">
+    <h1>All receipts</h1>
+
+    <ul>
+      #for kind, path in walkDir(storageEFS / "receipts"):
+        <li>
+          <a href="/basket/getreceiptpdf/${splitPath(path)[1]}">${splitPath(path)[1]}</a>
+        </li>
+      #end for
+    </ul>
+  </div>
+
+</div>
+
+#end proc
+#
+#
+#
+#
+#
+#proc genBasketConditions*(db: DbConn): string =
+<link rel="stylesheet" href="/css/basket_private.css">
+<div id="buy">
+  ${getValue(db, sql("SELECT conditions FROM basket_settings"))}
+</div>
+#end proc

@@ -1,0 +1,500 @@
+#? stdtmpl | standard
+#
+#
+#
+#proc genBuyNow*(db: DbConn, identifier: string): string =
+# result = ""
+#
+# let productData = getRow(db, sql("SELECT id, price, vat, valuta, productName, productDescription FROM basket_products WHERE identifier = ?"), identifier)
+#
+# let shippingData = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta FROM basket_shipping;"))
+#
+# let basketCountries = getValue(db, sql("SELECT countries FROM basket_settings;"))
+#
+# var price: int
+# if productData[2] == "":
+#   price = parseInt(productData[1])
+# else:
+#   price = parseInt(productData[1]) + parseInt(productData[2])
+# end if
+
+<link rel="stylesheet" href="/css/basket_private.css">
+<script src="/js/basket_private.js" defer></script>
+
+<div id="buy" class="customerData">
+  <input id="rawPrice" value="${price}" style="display: none;">
+  <input id="rawVat" value="${productData[2]}" style="display: none;">
+  <input id="priceTotal" value="" style="display: none;">
+  <input id="id" value="${productData[0]}" style="display: none;">
+  <input id="productname" value="${productData[4]}" style="display: none;">
+
+  <div id="buyBuyingHeading" class="has-text-centered">
+    <h2>${transBuy}</h2>
+
+    <h1>${productData[4]}</h1>
+
+    # if productData[2] != "":
+    <h3>${transPricePer}: ${parseInt(productData[1]) + parseInt(productData[2])} ${productData[3]} ${transInclVat}</h3>
+    # else:
+    <h3>${transPricePer}: ${productData[1]} ${productData[3]}</h3>
+    # end if
+
+    <hr>
+
+  </div>
+
+
+  <div id="buyNow">
+
+    <div id="buyBuying" class="customerdata">
+
+      <h3>Kundeinformation</h3>
+
+      <label>Navn<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input id="buyName" type="text" name="name" required class="input is-info" onkeyup="updateInput(this);">
+        </div>
+      </div>
+
+      <label>Email<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input id="buyEmail" type="email" name="email" required class="input is-info" onkeyup="updateEmail(this);">
+        </div>
+      </div>
+
+      <label>Kodeord (for at tilgå dine fakturaer online)<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input id="buyPassword" type="password" name="password" required min="4" max="300" class="input is-info" onkeyup="updatePassword(this);" >
+        </div>
+      </div>
+
+      <label>Antal bøger (mere end 10 kontakt)<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input id="buyProductcount" type="number" name="productcount" min="1" max="10" value="1" required class="input is-success" onkeyup="updatePrice(this);updatePriceCount();" >
+        </div>
+      </div>
+
+      <label>Pris inkl. moms</label>
+      <div class="field">
+        <div class="control">
+          <input id="updatedPrice" type="text" disabled="disabled" class="input is-info" value="${price}" >
+        </div>
+      </div>
+
+      <label>Heraf udgør moms</label>
+      <div class="field">
+        <div class="control">
+          <input id="updatedVat" type="text" disabled="disabled" class="input is-info" value="${productData[2]}" >
+        </div>
+      </div>
+
+      <label>Telefon</label>
+      <div class="field">
+        <div class="control">
+          <input id="buyPhone" type="tel" name="phone" class="input is-info" onkeyup="updatePhone(this);">
+        </div>
+      </div>
+
+      <label>Adresse<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input id="buyAddress" type="text" name="address" required class="input is-info"  onkeyup="updateInput(this);" >
+        </div>
+      </div>
+
+      <label>Postnummer<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input id="buyZip" type="text" name="zip" required class="input is-info" onkeyup="updateZip()">
+        </div>
+      </div>
+
+      <label>By (bynavn)<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input id="buyCity" type="text" name="city" required class="input is-info" onkeyup="updateInput(this);">
+        </div>
+      </div>
+
+      # let countryCount = split(basketCountries, "\n").len()
+      <label>Land</label>
+      <div class="field">
+        <div class="control">
+          # if countryCount == 1:
+          <div class="select is-success" style="width: 100%;">
+          # else:
+          <div class="select is-info" style="width: 100%;">
+          # end if
+            #
+            # if countryCount == 1:
+            <select id="buyCountry" name="country" style="width: 100%;" disabled="disabled">
+            # else:
+            <select id="buyCountry" name="buyCountry" style="width: 100%;">
+            # end if
+              # for country in split(basketCountries, "\n"):
+              #   if countryCount == 1:
+                  <option value="${country}" selected>${country}</option>
+              #   else:
+                  <option value="${country}">${country}</option>
+              #   end if
+              # end for
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <label>Firma (frivillig)</label>
+      <div class="field">
+        <div class="control">
+          <input id="buyCompany" type="text" name="company" class="input is-info" onkeyup="updateCompany(this);">
+        </div>
+      </div>
+
+      <br>
+      <div class="has-text-centered">
+        <button type="button" class="button is-link" onclick="gotoShipping()" style="width: 100px;">${transNext}</button>
+      </div>
+      <br>
+    </div> <!-- End: buyBuying -->
+
+
+
+
+    <div id="buyShipping" class="customerdata" style="display: none;">
+
+      <h3>Forsendelse</h3>
+
+      <div class="control">
+        # let shippingCount = shippingData.len()
+        # for shipping in shippingData:
+        <div class="box">
+          <label class="radio">
+            <input class="shippingChoice" type="radio" name="shipping" value="${shipping[0]}" data-name="${shipping[1]}" data-price="${shipping[3]}" data-vat="${shipping[4]}">
+            <b>${shipping[1]}</b>
+          </label>
+          <div class="shippingDetails">
+            # if shipping[2] != "":
+              <p>${shipping[2]}</p>
+            # end if
+            <p>
+              ${transPrice}: ${shipping[3]} ${shipping[5]} (${transVatS}: ${shipping[4]})
+            </p>
+          </div>
+        </div>
+        # end for
+      </div>
+
+      <br>
+      <div class="has-text-centered">
+        <button type="button" class="button is-warning" onclick="backToCustomer()" style="margin-right: 15px; width: 100px;">${transBack}</button>
+        <button type="button" class="button is-link" onclick="gotoAccept()" style="width: 100px;">${transNext}</button>
+      </div>
+      <br>
+
+    </div> <!-- End: buyShipping -->
+
+
+
+
+    <div id="buyAccept" class="customerdata" style="display: none;">
+
+      <h3>Vareinformation</h3>
+      <table class="table is-bordered is-hoverable">
+        <tbody>
+          <tr>
+            <td style="width: 200px;">Vare</td>
+            <td id="checkProduct"></td>
+          </tr>
+          <tr>
+            <td>Antal</td>
+            <td id="checkNumber"></td>
+          </tr>
+          <tr>
+            <td>Pris (u. moms)</td>
+            <td id="checkPrice"></td>
+          </tr>
+          <tr>
+            <td>Heraf moms</td>
+            <td id="checkPriceVat"></td>
+          </tr>
+          <tr>
+            <td>Forsendelse</td>
+            <td id="checkShipping"></td>
+          </tr>
+          <tr>
+            <td>Leveringspris (u. moms)</td>
+            <td id="checkShippingPrice"></td>
+          </tr>
+          <tr>
+            <td>Heraf moms</td>
+            <td id="checkShippingPriceVat"></td>
+          </tr>
+          <tr>
+            <td>Samlet pris (m. moms)</td>
+            <td id="checkPriceTotal"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Kundeinformationer</h3>
+      <table class="table is-bordered is-hoverable">
+        <tbody>
+          <tr>
+            <td style="width: 200px;">Navn</td>
+            <td id="checkName"></td>
+          </tr>
+          <tr>
+            <td>Email</td>
+            <td id="checkEmail"></td>
+          </tr>
+          <tr>
+            <td>Telefon</td>
+            <td id="checkPhone"></td>
+          </tr>
+          <tr>
+            <td>Adresse</td>
+            <td id="checkAddress"></td>
+          </tr>
+          <tr>
+            <td>Postnummer</td>
+            <td id="checkZip"></td>
+          </tr>
+          <tr>
+            <td>By</td>
+            <td id="checkCity"></td>
+          </tr>
+          <tr>
+            <td>Land</td>
+            <td id="checkCountry"></td>
+          </tr>
+          <tr>
+            <td>Firma</td>
+            <td id="checkCompany"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr>
+
+      <div class="has-text-centered">
+        #when defined(recaptcha):
+        #
+        #if useCaptcha:
+          <div id="recaptcha">
+            <div class="g-recaptcha" data-sitekey="${recaptchaSiteKey}" data-theme="light" style="transform:scale(0.93);-webkit-transform:scale(0.93);transform-origin:0 0;-webkit-transform-origin:0 0;"></div>
+            <script src="https://www.google.com/recaptcha/api.js"></script>
+          </div>
+        #end if
+        #
+        #end when
+
+        <label class="checkbox" style="max-width: 300px;">
+          <input id="acceptBuy" type="checkbox" required>
+          <span class="redAst">*</span> ${transAcceptConditions}
+        </label>
+
+        <br>
+        <br>
+        <div class="text-center">
+          <button type="button" class="button is-warning" onclick="backToShipping()" style="margin-right: 15px;width: 100px;">${transBack}</button>
+          <button type="button" class="button is-success" onclick="doTheBuy()" style="width: 100px;">${transBuy}</button>
+        </div>
+        <br>
+      </div>
+    </div> <!-- End: buyAccept -->
+
+
+
+
+
+    <div id="buyCongratulations" style="display: none;">
+
+      <div class="has-text-centered">
+        ${transCongratulations}
+      </div>
+
+      <hr>
+
+      <div id="allReceipts">
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div id="buy-info-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-content">
+    <div id="buy-info-modal-content" class="box has-text-centered">
+
+    </div>
+  </div>
+  <button class="modal-close is-large" aria-label="close"></button>
+</div>
+
+#end proc
+#
+#
+#
+#
+#
+#
+#
+#
+#proc genBuyReceiptPdf*(db: DbConn): string =
+# result = ""
+
+<link rel="stylesheet" href="/css/basket_private.css">
+
+<div id="buy">
+
+  <div id="buyBought">
+
+    <h1>Få adgang til dine fakturaer</h1>
+
+    <hr>
+
+    <h4>Indsæt din email og dit password nedenfor.</h4>
+
+    <form id="loginReceipt" method="POST" action="/basket/pdfreceipt">
+
+      <label>Email<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input type="email" name="email" required class="input is-info" >
+        </div>
+      </div>
+
+      <label>Password<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input type="password" name="password" required min="4" max="300" class="input is-info" >
+        </div>
+      </div>
+
+      <div class="text-center">
+        <button type="submit" class="button is-success">Se fakturaer</button>
+      </div>
+    </form>
+
+  </div>
+
+
+</div>
+
+#end proc
+#
+#
+#
+#
+#
+#proc genBuyShowPdf*(db: DbConn, email, password: string, receipts: seq[Row]): string =
+# result = ""
+#
+## let receipts = getAllRows(db, sql("SELECT id, productcount, receipt_nr, creation, password, salt, payment_received FROM basket_purchase WHERE email = ?"), email)
+#
+
+<link rel="stylesheet" href="/css/basket_private.css">
+
+<div id="buyPdfHead">
+
+  <div id="buyPdf">
+
+    <h1>Fakturaer</h1>
+
+    <table id="customerReceipts" class="table is-bordered is-hoverable">
+      <thead>
+        <tr>
+          <th>Faktura</th>
+          <th>Oprettet</th>
+          <th>Betaling</th>
+          <th>Afsendt</th>
+          <th>Download</th>
+        </tr>
+      </thead>
+      <tbody>
+
+      # for receipt in receipts:
+      #   if receipt[4] == makePassword(password, receipt[5], receipt[4]):
+      #     let filename = (receipt[0] & "_" & email.multiReplace([("@", "_"), (".", "_")]) & ".pdf")
+            <tr>
+              <td class="has-text-centered">${receipt[2]}</td>
+              <td>${epochDate(receipt[3], "YYYY-MM-DD HH:mm")}</td>
+              # case receipt[6]
+              # of "payed":
+                <td>Betaling registreret</td>
+              #of "awaiting":
+                <td>Betaling afventer</td>
+              #of "notchecked":
+                <td>Klar til betaling</td>
+              #of "canceled":
+                <td>Annulleret</td>
+              #else:
+                <td></td>
+              #end case
+              <td>${receipt[7]}</td>
+              <td>
+                <form id="getpdf" action="/basket/pdfreceipt/download" method="post" target="_blank">
+                  <input name="id" value="${receipt[0]}" style="display: none;">
+                  <input name="email" value="${email}" style="display: none;">
+                  <input name="password" value="${password}" style="display: none;">
+                  <input name="filename" value="${filename}" style="display: none;">
+                  <button type="submit" class="button is-info is-small">Faktura</button>
+                </form>
+              </td>
+            </tr>
+      #   end if
+      # end for
+
+      </tbody>
+    </table>
+
+  </div>
+
+
+</div>
+
+#end proc
+#
+#
+#
+#proc genBaskerProductoverview*(db: DbConn): string =
+# result = ""
+#
+# let allProducts = getAllRows(db, sql("SELECT productName, productDescription, price, vat, valuta, identifier FROM basket_products;"))
+
+<link rel="stylesheet" href="/css/basket_private.css">
+
+<div id="buy">
+
+  <div id="buyBought">
+
+    <h1>Products</h1>
+
+    <hr>
+
+    <h4>Klik på et produkt for at købe det.</h4>
+
+    <div>
+      # for product in allProducts:
+      <div class="box">
+        <h4><a href="/basket/buynow/${product[5]}">${product[0]}</a></h4>
+        <p>${product[1]}</p>
+        <br>
+        <span class="tag is-info">${product[2]} ${product[4]}</span>
+      </div>
+      # end for
+    </div>>
+
+  </div>
+
+
+</div>
+
+#end proc

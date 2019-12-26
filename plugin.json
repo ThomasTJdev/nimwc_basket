@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Basket",
+    "foldername": "basket",
+    "version": "0.1",
+    "requires": "6.0",
+    "url": "https://github.com/ThomasTJdev/nimwc_basket.git",
+    "method": "git",
+    "tags": [
+      "basket",
+      "buy",
+      "ecommerce",
+      "receipt",
+      "store",
+      "webshopd"
+    ],
+    "description": "A simple webshop. Buy products, create receipts and do accounting",
+    "license": "MIT",
+    "web": "https://github.com/ThomasTJdev/nimwc_basket",
+    "sustainability": "",
+    "email": "codefactory@ttj.dk"
+  }
+]

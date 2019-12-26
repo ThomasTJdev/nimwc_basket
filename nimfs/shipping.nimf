@@ -1,0 +1,127 @@
+#? stdtmpl | standard
+#
+#
+#
+#
+#proc genBasketShippingEdit*(db: DbConn): string =
+# result = ""
+#
+# let allShipping = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta FROM basket_shipping;"))
+#
+<link rel="stylesheet" href="/css/basket_private.css">
+<script src="/js/basket_private.js" defer></script>
+
+<div id="basket">
+
+  <div id="products">
+
+    <h1>Shipping</h1>
+
+    <hr>
+
+    <button id="addShipping" class="button is-info" style="width: 200px;" onclick="shippingAdd()">Add shipping</button>
+
+    <hr>
+
+    <h3>Click on a product to edit</h3>
+    <div>
+      <table id="products" class="table is-bordered is-hoverable" >
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>VAT</th>
+            <th>Valuta</th>
+          </tr>
+        </thead>
+        <tbody>
+          #for shipping in allShipping:
+            <tr class="shippingEdit" id="${shipping[0]}">
+              <td>${shipping[1]}</td>
+              <td>${shipping[2].substr(0,22)}</td>
+              <td>${shipping[3]}</td>
+              <td>${shipping[4]}</td>
+              <td>${shipping[5]}</td>
+            </tr>
+          #end for
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+  </div>
+
+</div>
+
+<div id="shipping-info-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-content">
+    <div id="shipping-info-modal-content" class="box has-text-centered">
+
+    </div>
+  </div>
+  <button class="modal-close is-large" aria-label="close"></button>
+</div>
+
+<div id="shipping-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card" style="width: 400px;">
+    <header id="modal-card-head" class="modal-card-head">
+      <p id="shipping-title" class="modal-card-title">Shipping</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section id="modal-card-body" class="modal-card-body scrollbar">
+
+      <form id="formShipping" method="POST" action="/basket/shipping/">
+
+      <input id="id" name="id" style="display: none;">
+
+      <label>Shipping name</label>
+      <div class="field">
+        <div class="control">
+          <input type="text" id="shippingEditName" name="name" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>Shipping description</label>
+      <div class="field">
+        <div class="control">
+          <textarea type="text" id="shippingEditDescription" name="description" class="textarea is-info"></textarea>
+        </div>
+      </div>
+
+      <label>Price (without VAT)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="shippingEditPrice" name="price" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>VAT (in whole cost in the specified valuta, e.g. 200)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="shippingEditVat" name="vat" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>Valuta (e.g. DKK, £, etc.)</label>
+      <div class="field">
+        <div class="control">
+          <input type="text"  id="shippingEditValuta" name="valuta" class="input is-info" value="">
+        </div>
+      </div>
+
+      <br>
+    </form>
+
+    </section>
+    <footer class="modal-card-foot">
+      <button id="shipping-close" class="button">Close</button>
+      <button type="button" class="button is-success" onclick="document.getElementById('formShipping').submit()">Save</button>
+    </footer>
+  </div>
+</div>
+
+#end proc

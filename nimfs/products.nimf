@@ -1,0 +1,165 @@
+#? stdtmpl | standard
+#
+#
+#
+#
+#proc genBasketProductEdit*(db: DbConn): string =
+# result = ""
+#
+# let allProducts = getAllRows(db, sql("SELECT id, identifier, productName, productDescription, price, vat, valuta, picture FROM basket_products;"))
+#
+<link rel="stylesheet" href="/css/basket_private.css">
+<script src="/js/basket_private.js" defer></script>
+
+<div id="basket">
+
+  <div id="products">
+
+    <h1>Products</h1>
+
+    <hr>
+
+    <button id="addProduct" class="button is-info" style="width: 200px;" onclick="productAdd()">Add product</button>
+
+    <hr>
+
+    <h3>Click on a product to edit</h3>
+    <div>
+      <table id="products" class="table is-bordered is-hoverable" >
+        <thead>
+          <tr>
+            <th>Identifier</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>VAT</th>
+            <th>Valuta</th>
+            <th>Picture</th>
+          </tr>
+        </thead>
+        <tbody>
+          #for product in allProducts:
+            <tr class="productEdit" id="${product[0]}">
+              <td>${product[1]}</td>
+              <td>${product[2]}</td>
+              <td>${product[3].substr(0,22)}</td>
+              <td>${product[4]}</td>
+              <td>${product[5]}</td>
+              <td>${product[6]}</td>
+              <td>
+                # if product[7] == "":
+                  False
+                # else:
+                  True
+                # end if
+              </td>
+            </tr>
+          #end for
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+
+
+
+  </div>
+
+</div>
+
+<div id="product-info-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-content">
+    <div id="product-info-modal-content" class="box has-text-centered">
+
+    </div>
+  </div>
+  <button class="modal-close is-large" aria-label="close"></button>
+</div>
+
+<div id="product-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card" style="width: 400px;">
+    <header id="modal-card-head" class="modal-card-head">
+      <p id="product-title" class="modal-card-title">Product</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section id="modal-card-body" class="modal-card-body scrollbar">
+
+      <form id="formProduct" method="POST" action="/basket/product/">
+
+      <input id="id" name="id" style="display: none;">
+
+      <p>Your product identifier (used in URL)</p>
+      <label>Identifier</label>
+      <div class="field">
+        <div class="control">
+          <input type="text" id="productEditIdentifier" name="identifier" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>Product name</label>
+      <div class="field">
+        <div class="control">
+          <input type="text" id="productEditName" name="name" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>Product description</label>
+      <div class="field">
+        <div class="control">
+          <textarea type="text" id="productEditDescription" name="description" class="textarea is-info"></textarea>
+        </div>
+      </div>
+
+      <label>Price (without VAT)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="productEditPrice" name="price" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>VAT (in whole cost in the specified valuta, e.g. 200)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="productEditVat" name="vat" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>Valuta (e.g. DKK, £, etc.)</label>
+      <div class="field">
+        <div class="control">
+          <input type="text"  id="productEditValuta" name="valuta" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>Product picture (not working yet)</label>
+      <div class="file has-name">
+        <label class="file-label">
+          <input class="file-input" type="file" name="picture">
+          <span class="file-cta">
+            <span class="file-icon">
+              <i class="fas fa-upload"></i>
+            </span>
+            <span class="file-label">
+              Choose a file…
+            </span>
+          </span>
+          <span class="file-name">
+
+          </span>
+        </label>
+      </div>
+
+      <br>
+    </form>
+
+    </section>
+    <footer class="modal-card-foot">
+      <button id="product-close" class="button">Close</button>
+      <button type="button" class="button is-success" onclick="document.getElementById('formProduct').submit()">Save</button>
+    </footer>
+  </div>
+</div>
+
+#end proc

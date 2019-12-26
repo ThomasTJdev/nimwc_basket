@@ -1,0 +1,332 @@
+#? stdtmpl | standard
+#
+#
+#
+#
+#proc genBuyAllReceipts*(db: DbConn): string =
+# result = ""
+#
+# let buyNotchecked = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "notchecked")
+#
+# let buyAwaiting = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "awaiting")
+#
+# let buyPayed = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? AND shipped IS NOT ? ORDER BY creation;"), "payed", "true")
+#
+# let buyShipped = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? AND shipped = ? ORDER BY creation;"), "payed", "true")
+#
+# let buyCanceled = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "canceled")
+#
+<link rel="stylesheet" href="/css/basket_private.css">
+<script src="/js/basket_private.js" defer></script>
+
+<div id="buy" class="adminreceipt">
+
+  ${genBasketLinks()}
+
+  <hr>
+
+  ${genBasketStats(db)}
+
+  <hr>
+
+  <div style="width: 300px; margin-left: auto; margin-right: auto;">
+    <a href="#awaiting" class="button is-info" style="width: 200px;">Awaiting receipts</a>
+    <a href="#payed" class="button is-info" style="width: 200px;">Payed receipts</a>
+    <a href="#payedshipped" class="button is-info" style="width: 200px;">Payed and shipped receipts</a>
+    <a href="#canceled" class="button is-info" style="width: 200px;">Canceled receipts</a>
+  </div>
+
+  <hr>
+
+  <div class="buyItem buyBlog">
+    <h3>Receipts not checked</h3>
+    <div class="table-overflow">
+      <table class="buy table is-bordered is-hoverable">
+        <thead>
+          <tr>
+            <th>Receipt</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Price</th>
+            <th>Shipped</th>
+          </tr>
+        </thead>
+        <tbody>
+          # for item in buyNotchecked:
+          <tr class="receiptItem" id="${item[0]}">
+            <td class="receipt">${item[5]}</td>
+            <td class="name">${item[1]}</td>
+            <td class="email">${item[2]}</td>
+            <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
+            <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
+            # var price = parseInt(item[7]) * parseInt(item[9])
+            # if item[8] != "":
+            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
+            # end if
+            <td class="price">${price} ${item[10]}</td>
+            <td class="shipped">${item[6]}</td>
+          </tr>
+          # end for
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="buyItem buyBlog">
+    <h3 id="awaiting">Receipts awaiting (checked)</h3>
+    <div class="table-overflow">
+      <table class="buy table is-bordered is-hoverable">
+        <thead>
+          <tr>
+            <th>Receipt</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Price</th>
+            <th>Shipped</th>
+          </tr>
+        </thead>
+        <tbody>
+          # for item in buyAwaiting:
+          <tr class="receiptItem" id="${item[0]}">
+            <td class="receipt">${item[5]}</td>
+            <td class="name">${item[1]}</td>
+            <td class="email">${item[2]}</td>
+            <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
+            <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
+            # var price = parseInt(item[7]) * parseInt(item[9])
+            # if item[8] != "":
+            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
+            # end if
+            <td class="price">${price} ${item[10]}</td>
+            <td class="shipped">${item[6]}</td>
+          </tr>
+          # end for
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="buyItem buyBlog">
+    <h3 id="payed">Receipts payed (checked)</h3>
+    <div class="table-overflow">
+      <table class="buy table is-bordered is-hoverable">
+        <thead>
+          <tr>
+            <th>Receipt</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Price</th>
+            <th>Shipped</th>
+          </tr>
+        </thead>
+        <tbody>
+          # for item in buyPayed:
+          <tr class="receiptItem payed" id="${item[0]}">
+            <td class="receipt">${item[5]}</td>
+            <td class="name">${item[1]}</td>
+            <td class="email">${item[2]}</td>
+            <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
+            <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
+            # var price = parseInt(item[7]) * parseInt(item[9])
+            # if item[8] != "":
+            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
+            # end if
+            <td class="price">${price} ${item[10]}</td>
+            <td class="shipped">${item[6]}</td>
+          </tr>
+          # end for
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="buyItem buyBlog">
+    <h3 id="payedshipped">Receipts shipped (payed and shipped)</h3>
+    <div class="table-overflow">
+      <table class="buy table is-bordered is-hoverable">
+        <thead>
+          <tr>
+            <th>Receipt</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Price</th>
+            <th>Shipped</th>
+          </tr>
+        </thead>
+        <tbody>
+          # for item in buyShipped:
+          <tr class="receiptItem" id="${item[0]}">
+            <td class="receipt">${item[5]}</td>
+            <td class="name">${item[1]}</td>
+            <td class="email">${item[2]}</td>
+            <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
+            <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
+            # var price = parseInt(item[7]) * parseInt(item[9])
+            # if item[8] != "":
+            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
+            # end if
+            <td class="price">${price} ${item[10]}</td>
+            <td class="shipped">${item[6]}</td>
+          </tr>
+          # end for
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="buyItem buyBlog">
+    <h3 id="canceled">Receipts canceled</h3>
+    <div class="table-overflow">
+      <table class="buy table is-bordered is-hoverable">
+        <thead>
+          <tr>
+            <th>Receipt</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Price</th>
+            <th>Shipped</th>
+          </tr>
+        </thead>
+        <tbody>
+          # for item in buyCanceled:
+          <tr class="receiptItem" id="${item[0]}">
+            <td class="receipt">${item[5]}</td>
+            <td class="name">${item[1]}</td>
+            <td class="email">${item[2]}</td>
+            <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
+            <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
+            # var price = parseInt(item[7]) * parseInt(item[9])
+            # if item[8] != "":
+            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
+            # end if
+            <td class="price">${price} ${item[10]}</td>
+            <td class="shipped">${item[6]}</td>
+          </tr>
+          # end for
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr>
+
+
+</div>
+
+<div id="receipt-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card" style="width: 400px;">
+    <header id="modal-card-head" class="modal-card-head">
+      <p id="buy-title" class="modal-card-title">Receipt</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section id="modal-card-body" class="modal-card-body scrollbar">
+      <p id="buy-text" style="color: black;"></p>
+
+      <table style="width: 100%;" class="table is-bordered">
+        <tbody>
+          <tr>
+            <td>Receipt number</td>
+            <td id="modalReceipt"></td>
+          </tr>
+          <tr>
+            <td>Name</td>
+            <td id="modalName"></td>
+          </tr>
+          <tr>
+            <td>Email</td>
+            <td id="modalEmail"></td>
+          </tr>
+          <tr>
+            <td>Creation</td>
+            <td id="modalCreation"></td>
+          </tr>
+          <tr>
+            <td>Modified</td>
+            <td id="modalModified"></td>
+          </tr>
+          <tr>
+            <td>Shipped</td>
+            <td id="modalShipped"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="has-text-centered">
+        <a id="downloadreceipt" href="/basket/getreceiptpdf/" target="_blank">Download receipt</a>
+      </div>
+
+      <hr>
+
+      <div class="has-text-centered">
+
+        <h3>Shipping</h3>
+
+        <form method="POST" action="/basket/receipt/status/shipped">
+          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <button class="button is-success" style="width: 200px;">Shipped (done)</button>
+        </form>
+
+        <br>
+
+        <form method="POST" action="/basket/receipt/status/notshipped">
+          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <button class="button is-danger" style="width: 200px;">Err, not shipped</button>
+        </form>
+
+        <hr>
+
+        <h3>Payment</h3>
+
+        <form method="POST" action="/basket/receipt/status/payed">
+          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <button class="button is-success" style="width: 200px;">Payed</button>
+        </form>
+
+        <br>
+
+        <form method="POST" action="/basket/receipt/status/awaiting">
+          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <button class="button is-info" style="width: 200px;">Awaiting</button>
+        </form>
+
+        <br>
+
+        <form method="POST" action="/basket/receipt/status/notchecked">
+          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <button class="button is-warning" style="width: 200px;">Not checked</button>
+        </form>
+
+        <br>
+
+        <form method="POST" action="/basket/receipt/status/canceled">
+          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <button class="button is-danger" style="width: 200px;">Canceled</button>
+        </form>
+      </div>
+
+    </section>
+    <footer class="modal-card-foot">
+      <button id="close-buy" class="button">Close</button>
+    </footer>
+  </div>
+</div>
+#end proc

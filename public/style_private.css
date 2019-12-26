@@ -1,0 +1,135 @@
+/* This plugin style_private.css file will be added to the public folder, but no automated import of the file will be generated */
+
+div#buy,
+div#basket {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid gray;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 60px;
+  max-width: 800px;
+  padding: 10px;
+}
+div#basket,
+div#buy.adminreceipt {
+  max-width: 1200px;
+}
+div#buy h3 {
+  text-align: center;
+}
+div#buy div#buyFront {
+  text-align: center;
+}
+div.table-overflow {
+  max-height: 800px;
+  overflow-y: auto;
+}
+div#buy table,
+div#basket table {
+  width: 100%;
+}
+div#buy table th,
+div#basket table th
+div#buyPdfHead table th {
+  background-color: #424242;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+div#buy table td.count,
+div#basket table td.count {
+  text-align: center
+}
+
+div#buy div.buyPlugins,
+div#buy div.buyUsers {
+  text-align: center;
+}
+
+div#buyNow,
+div#buyBought {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 500px;
+}
+div#buyBuying {
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+}
+div#buyNow h3,
+div#buyNow h1 {
+  text-align: center;
+}
+div.customerData h1 {
+  font-size: 3rem;
+}
+div.customerData h2 {
+  font-size: 2.5rem;
+  margin-bottom: 0;
+}
+form.customerData,
+div.customerData {
+  padding: 20px;
+  border: 1px solid #a7a7a7;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+div#buy .redAst {
+  color: red;
+  margin-left: 3px;
+  font-size: 1.1rem;
+}
+
+table#customerReceipts {
+  width: 100%;
+}
+div#buyBought {
+  padding-bottom: 20px;
+}
+div#buy-info-modal-content {
+  font-size: 1.3rem;
+}
+div#buyPdfHead {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid gray;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 60px;
+  max-width: 800px;
+  padding: 10px;
+}
+
+
+tr.receiptItem .price {
+  text-align: right;
+}
+
+div#allReceiptsPdf {
+  width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: 20px;
+}
+div#allReceiptsPdf li {
+  padding: 5px;
+  border: 1px solid grey;
+  background: #8080802b;
+}
+
+div.shippingDetails {
+  margin-left: 18px;
+  border-top: 1px solid grey;
+}
+div#buyAccept #recaptcha {
+  width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+div#buyCongratulations {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 800px;
+}
