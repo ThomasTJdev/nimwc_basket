@@ -29,10 +29,10 @@
 
   <hr>
 
-  <div style="width: 300px; margin-left: auto; margin-right: auto;">
-    <a href="#awaiting" class="button is-info" style="width: 200px;">Awaiting receipts</a>
-    <a href="#payed" class="button is-info" style="width: 200px;">Payed receipts</a>
-    <a href="#payedshipped" class="button is-info" style="width: 200px;">Payed and shipped receipts</a>
+  <div style="width: 300px; margin-left: auto; margin-right: auto;text-align: center;">
+    <a href="#awaiting" class="button is-info" style="width: 200px;margin-bottom: 10px;">Awaiting receipts</a>
+    <a href="#payed" class="button is-info" style="width: 200px;margin-bottom: 10px;">Payed receipts</a>
+    <a href="#payedshipped" class="button is-info" style="width: 200px;margin-bottom: 10px;">Payed and shipped receipts</a>
     <a href="#canceled" class="button is-info" style="width: 200px;">Canceled receipts</a>
   </div>
 
