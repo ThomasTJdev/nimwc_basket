@@ -49,3 +49,20 @@ There's some strings in Danish. If you would like it your language, you have to 
 * Let user add multiple products to basket.
 * Make a generic translation.
 * Clear up proc names - it's mixed with buy and basket.
+
+# Screenshots
+
+**Stats**
+![stats](screenshots/stats.png)
+
+**Products**
+![products](screenshots/products.png)
+
+**Shipping**
+![shipping](screenshots/shipping.png)
+
+**Accounting 1**
+![accounting1](screenshots/accounting1.png)
+
+**Accounting 2**
+![accounting2](screenshots/accounting2.png)
