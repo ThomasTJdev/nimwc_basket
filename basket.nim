@@ -164,8 +164,6 @@ proc basketStart*(db: DbConn) =
   create table if not exists basket_settings (
     id INTEGER primary key,
     receipt_nr_next     INTEGER,
-    */productName         TEXT NOT NULL,/*
-    */productDescription  TEXT,/*
     companyName         TEXT,
     companyDescription  TEXT NOT NULL,
     paymentMethod       TEXT NOT NULL,
