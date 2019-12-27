@@ -490,7 +490,7 @@
         <span class="tag is-info">${product[2]} ${product[4]}</span>
       </div>
       # end for
-    </div>>
+    </div>
 
   </div>
 
