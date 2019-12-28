@@ -2,7 +2,7 @@
   {
     "name": "Basket",
     "foldername": "basket",
-    "version": "0.1",
+    "version": "0.2",
     "requires": "6.0",
     "url": "https://github.com/ThomasTJdev/nimwc_basket.git",
     "method": "git",
@@ -12,7 +12,7 @@
       "ecommerce",
       "receipt",
       "store",
-      "webshop"
+      "webshopd"
     ],
     "description": "A simple webshop. Buy products, create receipts and do accounting",
     "license": "MIT",

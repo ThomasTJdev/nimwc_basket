@@ -16,7 +16,8 @@ import
   otp,
   parsecfg,
   smtp,
-  strutils
+  strutils,
+  tables
 
 from times import epochTime
 
@@ -27,8 +28,13 @@ import ../../nimwcpkg/passwords/passwords
 import ../../nimwcpkg/plugins/plugins
 import ../../nimwcpkg/webs/captchas
 
-import pdfreceipt
+import code/pdfreceipt
 export pdfBuyGenerator
+
+import code/translation
+export basketLangGen, basketLang, langTable
+
+import code/translation
 
 when defined(postgres): import db_postgres
 else:                   import db_sqlite
@@ -56,67 +62,12 @@ let
   smtpUser = dict.getSectionValue("SMTP", "SMTPUser")
   smtpPassword = dict.getSectionValue("SMTP", "SMTPPassword")
 
-# Translation
-const
-  transReceipt* = "Faktura"
-  transPrice = "Pris"
-  transPricePer = "Pris/styk"
-  transVat = "Moms"
-  transVatS = "moms"
-  transIncl = "Inkl."
-  transInclVat = "inkl. moms"
-  transBuy = "Køb"
-  transNext = "Videre"
-  transBack = "Tilbage"
-  transAcceptConditions = """Ved at trykke "Køb bog" bekræfter du en købsaftale og <a href="/basket/conditions" target="_blank">handelsbetingelserne</a>. Der vil blive genereret en faktura."""
-  transCongratulations = """
-    <h1>Tillykke!</h1>
-    <p>Du skal nu blot betale for varen, og så er den på vej til dig.</p>
-    <p>Vi har sendt dig en email med fakturaen. Du kan også downloade din faktura nedenfor.</p>"""
-
-
-# Mail
-const
-  mailSubjectCongrats* = """
-    $1: Faktura for $2
-  """
-  mailMsgCongrats* = """
-    <p>Hej $1</p>
-    <p>Mange tak for dit køb.</p>
-    <p>Du skal blot betale fakturaen, og herefter vil dit køb blive afsendt.</p>
-    <hr>
-    <p><b>Vare:</b> $2</p>
-    <p><b>Pris:</b> $3</p>
-    <p><b>Faktura nr.:</b> $8</p>
-    <p>
-      <b>Betaling:</b>
-      <br>
-      $4
-    </p>
-    <hr>
-    <p>Du kan finde alle dine fakturaer på: <a href="$5">Login til fakturaer</a></p>
-    <p>Hvis du har spørgsmål til din faktura eller forsendelsen, kan du altid kontakte os på <a href="mailto:$6">$6</a></p>
-    <p>Mvh<br>$7</p>
-  """
-  mailSubjectShipped* = """
-    $1: Din ordre er afsendt
-  """
-  mailMsgShipped* = """
-    <p>Hej $1</p>
-    <p>Din ordre er nu afsendt. Vi håber, at du bliver glad for din vare.</p>
-    <hr>
-    <p>Du kan finde alle dine fakturaer på: <a href="$2">Login til fakturaer</a></p>
-    <p>Hvis du har spørgsmål til din faktura eller forsendelsen, kan du altid kontakte os på <a href="mailto:$3">$3</a></p>
-    <p>Mvh<br>$4</p>
-  """
-
 
 include "nimfs/settings.nimf"
 include "nimfs/accounting.nimf"
 include "nimfs/basket.nimf"
 include "nimfs/products.nimf"
 include "nimfs/shipping.nimf"
-
 
 
 proc sendBasketReceipt*(mailTo, subject, msg, filepath, receiptNr: string) {.async.} =
@@ -137,7 +88,7 @@ proc sendBasketReceipt*(mailTo, subject, msg, filepath, receiptNr: string) {.asy
   multi.parts.add first
 
   # Add attachement
-  var image = newAttachment(readFile(filepath), filename = transReceipt & "_" & receiptNr & ".pdf")
+  var image = newAttachment(readFile(filepath), filename = basketLang("receipt") & "_" & receiptNr & ".pdf")
   image.encodeQuotedPrintables()
   multi.parts.add image
 
@@ -152,13 +103,14 @@ proc sendBasketReceipt*(mailTo, subject, msg, filepath, receiptNr: string) {.asy
   except:
     error("Plugin Basket: Error in sending receipt")
 
+
 proc basketStart*(db: DbConn) =
   ## Required proc. Will run on each program start
   ##
   ## If there's no need for this proc, just
   ## discard it. The proc may not be removed.
 
-  info("Buy plugin: Updating database with Buy table if not exists")
+  info("Basket plugin: Updating database with Basket table if not exists")
 
   if not db.tryExec(sql"""
   create table if not exists basket_settings (
@@ -171,10 +123,16 @@ proc basketStart*(db: DbConn) =
     countries           VARCHAR(1000),
     mailOrder           VARCHAR(10),
     mailShipped         VARCHAR(10),
+    languages           TEXT,
+    language            VARCHAR(10),
+    translation         TEXT,
     modified timestamp not null default (STRFTIME('%s', 'now')),
     creation timestamp not null default (STRFTIME('%s', 'now'))
   );""", []):
-    error("Buy plugin: Could not create table")
+    error("Basket plugin: Could not create table")
+
+  if getValue(db, sql("SELECT receipt_nr_next FROM basket_settings;")) == "":
+    exec(db, sql("INSERT INTO basket_settings (receipt_nr_next, companyName, companyDescription, paymentMethod, countries, language, languages, translation) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"), "1", "", "", "", "Denmark", "EN", "EN", mainTrans)
 
 
   if not db.tryExec(sql"""
@@ -190,7 +148,7 @@ proc basketStart*(db: DbConn) =
     modified timestamp not null default (STRFTIME('%s', 'now')),
     creation timestamp not null default (STRFTIME('%s', 'now'))
   );""", []):
-    error("Buy plugin: Could not create table")
+    error("Basket plugin: Could not create table")
 
 
   if not db.tryExec(sql"""
@@ -204,8 +162,7 @@ proc basketStart*(db: DbConn) =
     modified timestamp not null default (STRFTIME('%s', 'now')),
     creation timestamp not null default (STRFTIME('%s', 'now'))
   );""", []):
-    error("Buy plugin: Could not create table")
-
+    error("Basket plugin: Could not create table")
 
 
   #[
@@ -241,8 +198,12 @@ proc basketStart*(db: DbConn) =
     modified timestamp not null default (STRFTIME('%s', 'now')),
     creation timestamp not null default (STRFTIME('%s', 'now'))
   );""", []):
-    error("Buy plugin: Could not create table")
+    error("Basket plugin: Could not create table")
 
 
-  info("Buy plugin: Creating folder for receipts")
+  info("Basket plugin: Creating folder for receipts")
   discard existsOrCreateDir(storageEFS / "receipts")
+
+
+  info("Basket plugin: Initializing translations")
+  langTable = basketLangGen(db)

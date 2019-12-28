@@ -29,14 +29,14 @@
   <input id="productname" value="${productData[4]}" style="display: none;">
 
   <div id="buyBuyingHeading" class="has-text-centered">
-    <h2>${transBuy}</h2>
+    <h2>${basketLang("buy")}</h2>
 
     <h1>${productData[4]}</h1>
 
-    # if productData[2] != "":
-    <h3>${transPricePer}: ${parseInt(productData[1]) + parseInt(productData[2])} ${productData[3]} ${transInclVat}</h3>
+    # if productData[2] != "" and productData[2] != "0":
+    <h3>${basketLang("pricePer")}: ${parseInt(productData[1]) + parseInt(productData[2])} ${productData[3]} ${basketLang("inclVat")}</h3>
     # else:
-    <h3>${transPricePer}: ${productData[1]} ${productData[3]}</h3>
+    <h3>${basketLang("pricePer")}: ${productData[1]} ${productData[3]}</h3>
     # end if
 
     <hr>
@@ -48,72 +48,72 @@
 
     <div id="buyBuying" class="customerdata">
 
-      <h3>Kundeinformation</h3>
+      <h3>${basketLang("customerData")}</h3>
 
-      <label>Navn<span class="redAst">*</span></label>
+      <label>${basketLang("name")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input id="buyName" type="text" name="name" required class="input is-info" onkeyup="updateInput(this);">
         </div>
       </div>
 
-      <label>Email<span class="redAst">*</span></label>
+      <label>${basketLang("email")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input id="buyEmail" type="email" name="email" required class="input is-info" onkeyup="updateEmail(this);">
         </div>
       </div>
 
-      <label>Kodeord (for at tilgå dine fakturaer online)<span class="redAst">*</span></label>
+      <label>${basketLang("password")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input id="buyPassword" type="password" name="password" required min="4" max="300" class="input is-info" onkeyup="updatePassword(this);" >
         </div>
       </div>
 
-      <label>Antal bøger (mere end 10 kontakt)<span class="redAst">*</span></label>
+      <label>${basketLang("numberOfProducts")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input id="buyProductcount" type="number" name="productcount" min="1" max="10" value="1" required class="input is-success" onkeyup="updatePrice(this);updatePriceCount();" >
         </div>
       </div>
 
-      <label>Pris inkl. moms</label>
+      <label>${basketLang("priceVat")}</label>
       <div class="field">
         <div class="control">
           <input id="updatedPrice" type="text" disabled="disabled" class="input is-info" value="${price}" >
         </div>
       </div>
 
-      <label>Heraf udgør moms</label>
+      <label>${basketLang("hereofVat")}</label>
       <div class="field">
         <div class="control">
           <input id="updatedVat" type="text" disabled="disabled" class="input is-info" value="${productData[2]}" >
         </div>
       </div>
 
-      <label>Telefon</label>
+      <label>${basketLang("phone")}</label>
       <div class="field">
         <div class="control">
           <input id="buyPhone" type="tel" name="phone" class="input is-info" onkeyup="updatePhone(this);">
         </div>
       </div>
 
-      <label>Adresse<span class="redAst">*</span></label>
+      <label>${basketLang("address")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input id="buyAddress" type="text" name="address" required class="input is-info"  onkeyup="updateInput(this);" >
         </div>
       </div>
 
-      <label>Postnummer<span class="redAst">*</span></label>
+      <label>${basketLang("zip")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input id="buyZip" type="text" name="zip" required class="input is-info" onkeyup="updateZip()">
         </div>
       </div>
 
-      <label>By (bynavn)<span class="redAst">*</span></label>
+      <label>${basketLang("city")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input id="buyCity" type="text" name="city" required class="input is-info" onkeyup="updateInput(this);">
@@ -121,7 +121,7 @@
       </div>
 
       # let countryCount = split(basketCountries, "\n").len()
-      <label>Land</label>
+      <label>${basketLang("country")}</label>
       <div class="field">
         <div class="control">
           # if countryCount == 1:
@@ -147,7 +147,7 @@
         </div>
       </div>
 
-      <label>Firma (frivillig)</label>
+      <label>${basketLang("companyOptional")}</label>
       <div class="field">
         <div class="control">
           <input id="buyCompany" type="text" name="company" class="input is-info" onkeyup="updateCompany(this);">
@@ -156,7 +156,7 @@
 
       <br>
       <div class="has-text-centered">
-        <button type="button" class="button is-link" onclick="gotoShipping()" style="width: 100px;">${transNext}</button>
+        <button type="button" class="button is-link" onclick="gotoShipping()" style="width: 100px;">${basketLang("next")}</button>
       </div>
       <br>
     </div> <!-- End: buyBuying -->
@@ -166,7 +166,7 @@
 
     <div id="buyShipping" class="customerdata" style="display: none;">
 
-      <h3>Forsendelse</h3>
+      <h3>${basketLang("delivery")}</h3>
 
       <div class="control">
         # let shippingCount = shippingData.len()
@@ -181,7 +181,7 @@
               <p>${shipping[2]}</p>
             # end if
             <p>
-              ${transPrice}: ${shipping[3]} ${shipping[5]} (${transVatS}: ${shipping[4]})
+              ${basketLang("price")}: ${shipping[3]} ${shipping[5]} (${basketLang("vatS")}: ${shipping[4]})
             </p>
           </div>
         </div>
@@ -190,8 +190,8 @@
 
       <br>
       <div class="has-text-centered">
-        <button type="button" class="button is-warning" onclick="backToCustomer()" style="margin-right: 15px; width: 100px;">${transBack}</button>
-        <button type="button" class="button is-link" onclick="gotoAccept()" style="width: 100px;">${transNext}</button>
+        <button type="button" class="button is-warning" onclick="backToCustomer()" style="margin-right: 15px; width: 100px;">${basketLang("back")}</button>
+        <button type="button" class="button is-link" onclick="gotoAccept()" style="width: 100px;">${basketLang("next")}</button>
       </div>
       <br>
 
@@ -202,77 +202,77 @@
 
     <div id="buyAccept" class="customerdata" style="display: none;">
 
-      <h3>Vareinformation</h3>
-      <table class="table is-bordered is-hoverable">
+      <h3>${basketLang("productInfo")}</h3>
+      <table class="table is-bordered is-hoverable info">
         <tbody>
           <tr>
-            <td style="width: 200px;">Vare</td>
+            <td class="name">${basketLang("product")}</td>
             <td id="checkProduct"></td>
           </tr>
           <tr>
-            <td>Antal</td>
+            <td>${basketLang("quantity")}</td>
             <td id="checkNumber"></td>
           </tr>
           <tr>
-            <td>Pris (u. moms)</td>
+            <td>${basketLang("priceNoVat")}</td>
             <td id="checkPrice"></td>
           </tr>
           <tr>
-            <td>Heraf moms</td>
+            <td>${basketLang("vat")}</td>
             <td id="checkPriceVat"></td>
           </tr>
           <tr>
-            <td>Forsendelse</td>
+            <td>${basketLang("delivery")}</td>
             <td id="checkShipping"></td>
           </tr>
           <tr>
-            <td>Leveringspris (u. moms)</td>
+            <td>${basketLang("deliveryPriceNoVat")}</td>
             <td id="checkShippingPrice"></td>
           </tr>
           <tr>
-            <td>Heraf moms</td>
+            <td>${basketLang("vat")}</td>
             <td id="checkShippingPriceVat"></td>
           </tr>
           <tr>
-            <td>Samlet pris (m. moms)</td>
+            <td>${basketLang("totalPriceWithVat")}</td>
             <td id="checkPriceTotal"></td>
           </tr>
         </tbody>
       </table>
 
-      <h3>Kundeinformationer</h3>
+      <h3>${basketLang("customerData")}</h3>
       <table class="table is-bordered is-hoverable">
         <tbody>
           <tr>
-            <td style="width: 200px;">Navn</td>
+            <td class="name">${basketLang("name")}</td>
             <td id="checkName"></td>
           </tr>
           <tr>
-            <td>Email</td>
+            <td>${basketLang("email")}</td>
             <td id="checkEmail"></td>
           </tr>
           <tr>
-            <td>Telefon</td>
+            <td>${basketLang("phone")}</td>
             <td id="checkPhone"></td>
           </tr>
           <tr>
-            <td>Adresse</td>
+            <td>${basketLang("address")}</td>
             <td id="checkAddress"></td>
           </tr>
           <tr>
-            <td>Postnummer</td>
+            <td>${basketLang("zip")}</td>
             <td id="checkZip"></td>
           </tr>
           <tr>
-            <td>By</td>
+            <td>${basketLang("city")}</td>
             <td id="checkCity"></td>
           </tr>
           <tr>
-            <td>Land</td>
+            <td>${basketLang("country")}</td>
             <td id="checkCountry"></td>
           </tr>
           <tr>
-            <td>Firma</td>
+            <td>${basketLang("company")}</td>
             <td id="checkCompany"></td>
           </tr>
         </tbody>
@@ -294,14 +294,14 @@
 
         <label class="checkbox" style="max-width: 300px;">
           <input id="acceptBuy" type="checkbox" required>
-          <span class="redAst">*</span> ${transAcceptConditions}
+          <span class="redAst">*</span> ${basketLang("acceptConditions")}
         </label>
 
         <br>
         <br>
-        <div class="text-center">
-          <button type="button" class="button is-warning" onclick="backToShipping()" style="margin-right: 15px;width: 100px;">${transBack}</button>
-          <button type="button" class="button is-success" onclick="doTheBuy()" style="width: 100px;">${transBuy}</button>
+        <div class="has-text-centered">
+          <button type="button" class="button is-warning" onclick="backToShipping()" style="margin-right: 15px;width: 100px;">${basketLang("back")}</button>
+          <button type="button" class="button is-success" onclick="doTheBuy()" style="width: 100px;">${basketLang("buy")}</button>
         </div>
         <br>
       </div>
@@ -314,7 +314,7 @@
     <div id="buyCongratulations" style="display: none;">
 
       <div class="has-text-centered">
-        ${transCongratulations}
+        ${basketLang("congratulations")}
       </div>
 
       <hr>
@@ -356,30 +356,30 @@
 
   <div id="buyBought">
 
-    <h1>Få adgang til dine fakturaer</h1>
+    <h1>${basketLang("accessReceipts")}</h1>
 
     <hr>
 
-    <h4>Indsæt din email og dit password nedenfor.</h4>
+    <h4>${basketLang("insertUserPwd")}</h4>
 
     <form id="loginReceipt" method="POST" action="/basket/pdfreceipt">
 
-      <label>Email<span class="redAst">*</span></label>
+      <label>${basketLang("email")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input type="email" name="email" required class="input is-info" >
         </div>
       </div>
 
-      <label>Password<span class="redAst">*</span></label>
+      <label>${basketLang("password")}<span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
           <input type="password" name="password" required min="4" max="300" class="input is-info" >
         </div>
       </div>
 
-      <div class="text-center">
-        <button type="submit" class="button is-success">Se fakturaer</button>
+      <div class="has-text-centered">
+        <button type="submit" class="button is-success">${basketLang("seeReceipts")}</button>
       </div>
     </form>
 
@@ -406,16 +406,16 @@
 
   <div id="buyPdf">
 
-    <h1>Fakturaer</h1>
+    <h1>${basketLang("receipts")}</h1>
 
     <table id="customerReceipts" class="table is-bordered is-hoverable">
       <thead>
         <tr>
-          <th>Faktura</th>
-          <th>Oprettet</th>
-          <th>Betaling</th>
-          <th>Afsendt</th>
-          <th>Download</th>
+          <th>${basketLang("receipt")}</th>
+          <th>${basketLang("creation")}</th>
+          <th>${basketLang("payment")}</th>
+          <th>${basketLang("posted")}</th>
+          <th>${basketLang("download")}</th>
         </tr>
       </thead>
       <tbody>
@@ -428,13 +428,13 @@
               <td>${epochDate(receipt[3], "YYYY-MM-DD HH:mm")}</td>
               # case receipt[6]
               # of "payed":
-                <td>Betaling registreret</td>
+                <td>${basketLang("paymentRegistered")}</td>
               #of "awaiting":
-                <td>Betaling afventer</td>
+                <td>${basketLang("paymentAwaiting")}</td>
               #of "notchecked":
-                <td>Klar til betaling</td>
+                <td>${basketLang("paymentReady")}</td>
               #of "canceled":
-                <td>Annulleret</td>
+                <td>${basketLang("paymentCanceled")}</td>
               #else:
                 <td></td>
               #end case
@@ -445,7 +445,7 @@
                   <input name="email" value="${email}" style="display: none;">
                   <input name="password" value="${password}" style="display: none;">
                   <input name="filename" value="${filename}" style="display: none;">
-                  <button type="submit" class="button is-info is-small">Faktura</button>
+                  <button type="submit" class="button is-info is-small">${basketLang("receipt")}</button>
                 </form>
               </td>
             </tr>
@@ -475,11 +475,11 @@
 
   <div id="buyBought">
 
-    <h1>Products</h1>
+    <h1>${basketLang("products")}</h1>
 
     <hr>
 
-    <h4>Klik på et produkt for at købe det.</h4>
+    <h4>${basketLang("clickToBuy")}</h4>
 
     <div>
       # for product in allProducts:

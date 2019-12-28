@@ -2,6 +2,9 @@
   #[
     Settings admin: Pages
   ]#
+
+
+
   get "/basket/settings":
     createTFD()
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
@@ -27,10 +30,14 @@
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
       redirect("/")
 
+    #exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?, productName = ?, productDescription = ?, companyName = ?, companyDescription = ?, paymentMethod = ?"), @"receipt_nr_next", @"productName", @"productDescription", @"companyName", @"companyDescription", @"paymentMethod")
+
     let mailOrder = if @"mailOrder" == "on": "true" else: "false"
     let mailShipped = if @"mailShipped" == "on": "true" else: "false"
 
-    exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?, companyName = ?, companyDescription = ?, paymentMethod = ?, conditions = ?, mailOrder = ?, mailShipped = ?, countries = ?"), @"receipt_nr_next", @"companyName", @"companyDescription", @"paymentMethod", @"conditions", mailOrder, mailShipped, @"countries")
+    exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?, companyName = ?, companyDescription = ?, paymentMethod = ?, conditions = ?, mailOrder = ?, mailShipped = ?, countries = ?, language = ?, languages = ?, translation = ?"), @"receipt_nr_next", @"companyName", @"companyDescription", @"paymentMethod", @"conditions", mailOrder, mailShipped, @"countries", @"language", @"languages", @"translation")
+
+    langTable = basketLangGen(db)
 
     redirect("/basket/settings/edit")
 
@@ -79,6 +86,18 @@
 
     redirect("/basket/products/edit")
 
+  #[ Edit price settings
+  post "/basket/editsettings/product":
+    createTFD()
+    if not c.loggedIn or c.rank notin [Admin, Moderator]:
+      redirect("/")
+
+    exec(db, sql("UPDATE basket_products SET identifier = ?, price = ?, vat = ?, valuta = ?"), @"identifier", @"price", @"vat", @"valute")
+
+    redirect("/basket/settings/edit")
+  ]#
+
+
 
   #[
     Settings admin: Products
@@ -118,6 +137,9 @@
     redirect("/basket/shipping/edit")
 
 
+
+
+
   #[
     Settings admin: PDF receipts
   ]#
@@ -138,6 +160,8 @@
       redirect("/")
 
     sendFile(storageEFS / "receipts" / @"filename")
+
+
 
 
   #[
@@ -166,13 +190,15 @@
         let userData = getRow(db, sql("SELECT name, email FROM basket_purchase WHERE id = ?"), @"receipt_id")
 
         let
-          appDir = getAppDir().replace("nimwcpkg", "")
-          dict = loadConfig(appDir / "config/config.cfg")
+          appDir       = getAppDir().replace("nimwcpkg", "")
+          dict         = loadConfig(appDir / "config/config.cfg")
           supportEmail = dict.getSectionValue("SMTP", "SMTPEmailSupport")
+          mailSubject  = basketLang("mailSubjectShipped")
+          mailMsg      = basketLang("mailMsgShipped")
 
         asyncCheck sendMailNow(
-                  mailSubjectShipped.format(title),
-                  mailMsgShipped.format(@"name", mainURL & "/basket/pdfreceipt/login",
+                  mailSubject.format(title),
+                  mailMsg.format(@"name", mainURL & "/basket/pdfreceipt/login",
                   supportEmail, title), @"email".toLowerAscii())
 
     of "notshipped":
@@ -181,6 +207,8 @@
       exec(db, sql("UPDATE basket_purchase SET payment_received = ?, modified = ? WHERE id = ?"), @"action", toInt(epochTime()), @"receipt_id")
 
     redirect("/basket/settings")
+
+
 
 
   #[
@@ -196,6 +224,9 @@
   # Access the buy now page
   get "/basket/buynow/@identifier":
     createTFD()
+
+    if getValue(db, sql("SELECT id FROM basket_products WHERE identifier = ?"), @"identifier") == "":
+      redirect("/")
 
     resp genMain(c, genBuyNow(db, @"identifier"))
 
@@ -266,13 +297,14 @@
 
     if getValue(db, sql("SELECT mailOrder FROM basket_settings;")) == "true":
       let
-        appDir = getAppDir().replace("nimwcpkg", "")
-        dict = loadConfig(appDir / "config/config.cfg")
+        appDir       = getAppDir().replace("nimwcpkg", "")
+        dict         = loadConfig(appDir / "config/config.cfg")
         supportEmail = dict.getSectionValue("SMTP", "SMTPEmailSupport")
-
+        mailSubject  = basketLang("mailSubjectCongrats")
+        mailMsg      = basketLang("mailMsgCongrats")
       asyncCheck sendBasketReceipt(email,
-                    mailSubjectCongrats.format(title, productData[3]),
-                    mailMsgCongrats.format(@"name",
+                    mailSubject.format(title, productData[3]),
+                    mailMsg.format(@"name",
                         productData[3],
                         $totalPrice & " " & productData[2],
                         payment,
@@ -339,6 +371,7 @@
     if data[2] != makePassword(password, data[3], data[2]):
       redirect("/")
 
+    # storageEFS / "receipts" / (@"email".multiReplace([("@", "_"), (".", "_")]) & ".pdf")
     let path = storageEFS / "receipts" / @"filename"
     if fileExists(path):
       sendFile(path)
@@ -351,3 +384,17 @@
     createTFD()
 
     resp genMain(c, genBasketConditions(db))
+
+
+  # Fake generation of receipt in dev-mode
+  get "/basket/fake":
+    createTFD()
+
+    when defined(dev):
+      pdfBuyGenerator(db, "15", storageEFS, "niss@ttj.dk")
+
+      resp("OK")
+
+    else:
+      redirect("/")
+

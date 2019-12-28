@@ -396,11 +396,7 @@ function doTheBuy() {
     return;
   }
 
-  var recaptcha = "";
-  var recaptchaDom = document.getElementById("g-recaptcha-response");
-  if (typeof (recaptchaDom) != 'undefined' && recaptchaDom != null) {
-    recaptcha = recaptchaDom.value;
-  }
+
   var params = {
     id: parId,
     productcount: parNumber,
@@ -414,7 +410,7 @@ function doTheBuy() {
     country: parCountry,
     company: document.getElementById("buyCompany").value,
     shipping: parShipping,
-    grecaptcharesponse: recaptcha
+    grecaptcharesponse: document.getElementById("g-recaptcha-response").value
   }
 
   data = Object.entries(params)

@@ -6,9 +6,9 @@
 # result = ""
 <div class="has-text-centered">
   <ul>
+    <li><a href="/basket/products">Products</a></li>
     <li><a href="/basket/products/edit">Product settings</a></li>
     <li><a href="/basket/shipping/edit">Shipping settings</a></li>
-
     <li><a href="/basket/allreceipts">Accounting with receipts</a></li>
     <li><a href="/basket/settings/edit">Edit company data</a></li>
     <li><a href="/basket/pdfreceipt/login">Login to receipts</a></li>
@@ -173,11 +173,7 @@
 # result = ""
 #
 #
-# if getValue(db, sql("SELECT receipt_nr_next FROM basket_settings;")) == "":
-#   let id = insertID(db, sql("INSERT INTO basket_settings (receipt_nr_next, companyName, companyDescription, paymentMethod, countries) VALUES (?, ?, ?, ?, ?)"), "1", "", "", "", "Denmark")
-# end if
-#
-# let setMain = getRow(db, sql("SELECT receipt_nr_next, companyDescription, paymentMethod, companyName, conditions, mailOrder, mailShipped, countries FROM basket_settings;"))
+# let setMain = getRow(db, sql("SELECT receipt_nr_next, companyDescription, paymentMethod, companyName, conditions, mailOrder, mailShipped, countries, language, languages, translation FROM basket_settings;"))
 #
 #
 <link rel="stylesheet" href="/css/basket_private.css">
@@ -189,49 +185,49 @@
     <h1>Edit company settings</h1>
 
     <form method="POST" action="/basket/editsettings/main">
-      <label>Receipt nr</label>
+      <h4>Receipt nr</h4>
       <div class="field">
         <div class="control">
           <input type="number" name="receipt_nr_next" class="input is-info" value="${setMain[0]}">
         </div>
       </div>
 
-      <label>Company name</label>
+      <h4>Company name</h4>
       <div class="field">
         <div class="control">
           <input type="text" name="companyName" class="input is-info" value="${setMain[3]}">
         </div>
       </div>
 
-      <label>Company description(address, company id, etc.)</label>
+      <h4>Company description(address, company id, etc.)</h4>
       <div class="field">
         <div class="control">
           <textarea type="text" name="companyDescription" class="textarea is-info" >${setMain[1]}</textarea>
         </div>
       </div>
 
-      <label>Payment method (bank number, days to pay, etc.)</label>
+      <h4>Payment method (bank number, days to pay, etc.)</h4>
       <div class="field">
         <div class="control">
           <textarea type="text" name="paymentMethod" class="textarea is-info" >${setMain[2]}</textarea>
         </div>
       </div>
 
-      <label>Shipping countries (1 per line)</label>
+      <h4>Shipping countries (1 per line)</h4>
       <div class="field">
         <div class="control">
           <textarea type="text" name="countries" class="textarea is-info" >${setMain[7]}</textarea>
         </div>
       </div>
 
-      <label>Conditions</label>
+      <h4>Conditions</h4>
       <div class="field">
         <div class="control">
           <textarea type="text" name="conditions" class="textarea is-info" >${setMain[4]}</textarea>
         </div>
       </div>
 
-      <label>Mails</label>
+      <h4>Mails</h4>
       <div>
         <label class="checkbox">
           # if setMain[5] == "true":
@@ -251,6 +247,36 @@
           Send an email to customer when order is shipped.
         </label>
       </div>
+
+      <br>
+
+      <h4>Selected language</h4>
+      <p>Language used for customer</p>
+      <div class="select is-success">
+          <select name="language">
+            # for lang in split(setMain[9], "\n"):
+            #   if split(setMain[9], "\n").len() == 1:
+                <option selected value="${lang}">${lang}</option>
+            #   elif setMain[8] == lang:
+                <option selected value="${setMain[8]}">${setMain[8]}</option>
+            #   else:
+                <option value="${lang}">${lang}</option>
+            #   end if
+            # end for
+          </select>
+      </div>
+
+      <br><br>
+
+      <h4>Translations languages</h4>
+      <p>Only 1 identifer per line!</p>
+      <textarea class="textarea" name="languages">${setMain[9]}</textarea>
+
+      <br>
+
+      <h4>Translations</h4>
+      <p>Copy paste everything, then change the language identifer (e.g. EN) to your language.</p>
+      <textarea class="textarea" name="translation">${setMain[10]}</textarea>
 
       <br>
 
