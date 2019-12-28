@@ -12,7 +12,7 @@
       "ecommerce",
       "receipt",
       "store",
-      "webshopd"
+      "webshop"
     ],
     "description": "A simple webshop. Buy products, create receipts and do accounting",
     "license": "MIT",

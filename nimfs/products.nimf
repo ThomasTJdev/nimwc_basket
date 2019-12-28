@@ -42,7 +42,7 @@
             <tr class="productEdit" id="${product[0]}">
               <td>${product[1]}</td>
               <td>${product[2]}</td>
-              <td>${product[3].substr(0,22)}</td>
+              <td>${product[3].substr(0,122)}</td>
               <td>${product[4]}</td>
               <td>${product[5]}</td>
               <td>${product[6]}</td>

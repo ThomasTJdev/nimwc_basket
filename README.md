@@ -27,13 +27,15 @@ ALTER TABLE basket_settings ADD COLUMN translation TEXT;
 
 * Create multiple products with specific prices and vats
 * Create multiple shipping options
-* Keep track on payments, awaiting payments, shipped orders etc. (manually)
+* Keep track and update status on payments, awaiting payments, shipped orders etc. (manually)
 * Set company data in one place
+* Enable mails to customer on order and shipping
+* Make a buying conditions page
 * Full translation - use your own language, customize all language variables from the browser
 
 ### Customer
 
-* Buy product with online form. Choose number of products and shipping method.
+* Buy products with an online form. Choose number of products and shipping method.
 * Make profile where all receipts can be accessed
 * Download PDF receipts
 * Access old receipts
@@ -48,6 +50,7 @@ ALTER TABLE basket_settings ADD COLUMN translation TEXT;
 
 ## Use
 
+* Plugin settings `/basket/settings`
 * Access all the products on `/basket/products`
 * Buy a single product with `/basket/products/@identifier`. You can design your own product page, and just insert links to the products.
 
@@ -55,3 +58,33 @@ ALTER TABLE basket_settings ADD COLUMN translation TEXT;
 
 * Let user add multiple products to basket.
 * Clear up proc names - it's mixed with buy and basket.
+
+# Screenshots
+
+**Stats**
+
+![stats](screenshots/stats.png)
+
+___
+
+**Products**
+
+![products](screenshots/products.png)
+
+___
+
+**Shipping**
+
+![shipping](screenshots/shipping.png)
+
+___
+
+**Accounting 1**
+
+![accounting1](screenshots/accounting1.png)
+
+___
+
+**Accounting 2**
+
+![accounting2](screenshots/accounting2.png)

@@ -30,8 +30,6 @@
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
       redirect("/")
 
-    #exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?, productName = ?, productDescription = ?, companyName = ?, companyDescription = ?, paymentMethod = ?"), @"receipt_nr_next", @"productName", @"productDescription", @"companyName", @"companyDescription", @"paymentMethod")
-
     let mailOrder = if @"mailOrder" == "on": "true" else: "false"
     let mailShipped = if @"mailShipped" == "on": "true" else: "false"
 
@@ -85,17 +83,6 @@
     exec(db, sql("UPDATE basket_products SET identifier = ?, productName = ?, productDescription = ?, price = ?, vat = ?, valuta = ? WHERE id = ?;"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"id")
 
     redirect("/basket/products/edit")
-
-  #[ Edit price settings
-  post "/basket/editsettings/product":
-    createTFD()
-    if not c.loggedIn or c.rank notin [Admin, Moderator]:
-      redirect("/")
-
-    exec(db, sql("UPDATE basket_products SET identifier = ?, price = ?, vat = ?, valuta = ?"), @"identifier", @"price", @"vat", @"valute")
-
-    redirect("/basket/settings/edit")
-  ]#
 
 
 
@@ -270,6 +257,9 @@
       receipt_nr_next = getValue(db, sql("SELECT receipt_nr_next FROM basket_settings"))
       shippingData = getRow(db, sql("SELECT price, vat FROM basket_shipping WHERE id = ?"), @"shipping")
 
+    if productData.len() == 0:
+      redirect("/")
+
     # Update next receipt number, and use current receipt number
     let receipt_nr = if receipt_nr_next == "": "1" else: receipt_nr_next
     let receipt_nr_next_inc = if receipt_nr == "": "2" else: $(parseInt(receipt_nr) + 1)
@@ -371,7 +361,6 @@
     if data[2] != makePassword(password, data[3], data[2]):
       redirect("/")
 
-    # storageEFS / "receipts" / (@"email".multiReplace([("@", "_"), (".", "_")]) & ".pdf")
     let path = storageEFS / "receipts" / @"filename"
     if fileExists(path):
       sendFile(path)
@@ -384,17 +373,3 @@
     createTFD()
 
     resp genMain(c, genBasketConditions(db))
-
-
-  # Fake generation of receipt in dev-mode
-  get "/basket/fake":
-    createTFD()
-
-    when defined(dev):
-      pdfBuyGenerator(db, "15", storageEFS, "niss@ttj.dk")
-
-      resp("OK")
-
-    else:
-      redirect("/")
-
