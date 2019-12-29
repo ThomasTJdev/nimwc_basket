@@ -10,6 +10,10 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 * [mime](https://github.com/enthus1ast/nimMime) - Clone the repo and run `nimble install`
 
 ## Changelog
+### v0.3
+* Minor design
+* Full JS translation
+* Setting page for translations
 
 ### v0.2
 * New DB columns:
@@ -19,7 +23,6 @@ ALTER TABLE basket_settings ADD COLUMN language VARCHAR(10);
 ALTER TABLE basket_settings ADD COLUMN translation TEXT;
 ```
 * Support for translations
-* Minor design
 
 ## Features
 
