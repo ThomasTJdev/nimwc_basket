@@ -11,6 +11,8 @@
 #
 # let basketCountries = getValue(db, sql("SELECT countries FROM basket_settings;"))
 #
+# let lang = getValue(db, sql("SELECT language FROM basket_settings;"))
+#
 # var price: int
 # if productData[2] == "":
 #   price = parseInt(productData[1])
@@ -19,9 +21,9 @@
 # end if
 
 <link rel="stylesheet" href="/css/basket_private.css">
-<script src="/js/basket_private.js" defer></script>
 
 <div id="buy" class="customerData">
+  <input id="userLang" value="${lang}" style="display: none;">
   <input id="rawPrice" value="${price}" style="display: none;">
   <input id="rawVat" value="${productData[2]}" style="display: none;">
   <input id="priceTotal" value="" style="display: none;">
