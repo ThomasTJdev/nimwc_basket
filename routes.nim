@@ -17,15 +17,15 @@
     Settings admin: Edit settings
   ]#
   # Edit settings page
-  get "/basket/settings/edit":
+  get "/basket/company/edit":
     createTFD()
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
       redirect("/")
 
-    resp genMain(c, genBuyEditsettings(db))
+    resp genMain(c, genBasketCompany(db))
 
   # Edit main settings
-  post "/basket/editsettings/main":
+  post "/basket/company/edit":
     createTFD()
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
       redirect("/")
@@ -37,7 +37,7 @@
 
     langTable = basketLangGen(db)
 
-    redirect("/basket/settings/edit")
+    redirect("/basket/company/edit")
 
 
 

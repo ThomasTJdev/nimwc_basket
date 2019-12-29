@@ -48,6 +48,11 @@ ALTER TABLE basket_settings ADD COLUMN translation TEXT;
 3) Add a shipping method
 4) Launch
 
+If you prefer another language than Danish or English:
+1) Add you language in the language settings
+2) Edit the JS file to include your language
+3) Make a PR or issue containing your language, so the repo can be updated :)
+
 ## Use
 
 * Plugin settings `/basket/settings`

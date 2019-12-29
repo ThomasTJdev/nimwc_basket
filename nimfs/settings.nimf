@@ -10,7 +10,7 @@
     <li><a href="/basket/products/edit">Product settings</a></li>
     <li><a href="/basket/shipping/edit">Shipping settings</a></li>
     <li><a href="/basket/allreceipts">Accounting with receipts</a></li>
-    <li><a href="/basket/settings/edit">Edit company data</a></li>
+    <li><a href="/basket/company/edit">Edit company data</a></li>
     <li><a href="/basket/pdfreceipt/login">Login to receipts</a></li>
     <li><a href="/basket/allreceiptspdf">Receipts</a></li>
   </ul>
@@ -169,7 +169,7 @@
 #
 #
 #
-#proc genBuyEditsettings*(db: DbConn): string =
+#proc genBasketCompany*(db: DbConn): string =
 # result = ""
 #
 #
@@ -184,7 +184,7 @@
 
     <h1>Edit company settings</h1>
 
-    <form method="POST" action="/basket/editsettings/main">
+    <form method="POST" action="/basket/company/edit">
       <h4>Receipt nr</h4>
       <div class="field">
         <div class="control">

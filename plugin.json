@@ -14,7 +14,7 @@
       "store",
       "webshop"
     ],
-    "description": "A simple webshop. Buy products, create receipts and do accounting",
+    "description": "A simple webshop. Buy products, create receipts and do accounting.",
     "license": "MIT",
     "web": "https://github.com/ThomasTJdev/nimwc_basket",
     "sustainability": "",
