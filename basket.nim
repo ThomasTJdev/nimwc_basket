@@ -39,14 +39,14 @@ import code/translation
 when defined(postgres): import db_postgres
 else:                   import db_sqlite
 
+let (basketN, basketV*, basketD, basketU) = pluginGetDetails("basket")
 proc pluginInfo() =
-  let (n, v, d, u) = pluginGetDetails("basket")
   echo " "
   echo "--------------------------------------------"
-  echo "  Package:      " & n
-  echo "  Version:      " & v
-  echo "  Description:  " & d
-  echo "  URL:          " & u
+  echo "  Package:      " & basketN
+  echo "  Version:      " & basketV
+  echo "  Description:  " & basketD
+  echo "  URL:          " & basketU
   echo "--------------------------------------------"
   echo " "
 pluginInfo()
@@ -207,3 +207,9 @@ proc basketStart*(db: DbConn) =
 
   info("Basket plugin: Initializing translations")
   langTable = basketLangGen(db)
+
+
+  info("Basket plugin: Copying UI JS-file if not exists or newer version available")
+  if not fileExists(getAppDir().replace("nimwcpkg") / "public/js/basket_ui_" & basketV & ".js"):
+    copyFile(getAppDir().replace("nimwcpkg") / "plugins/basket/public/basket_ui.js", getAppDir().replace("nimwcpkg") / "public/js/basket_ui_" & basketV & ".js")
+    info("Basket plugin: New JS file copied to JS-folders")

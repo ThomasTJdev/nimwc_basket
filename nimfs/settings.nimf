@@ -4,16 +4,18 @@
 #
 #proc genBasketLinks(): string =
 # result = ""
-<div class="has-text-centered">
-  <ul>
-    <li><a href="/basket/products">Products</a></li>
-    <li><a href="/basket/products/edit">Product settings</a></li>
-    <li><a href="/basket/shipping/edit">Shipping settings</a></li>
-    <li><a href="/basket/allreceipts">Accounting with receipts</a></li>
-    <li><a href="/basket/company/edit">Edit company data</a></li>
-    <li><a href="/basket/pdfreceipt/login">Login to receipts</a></li>
-    <li><a href="/basket/allreceiptspdf">Receipts</a></li>
-  </ul>
+<div class="has-text-centered" style="max-width: 350px; margin-left: auto; margin-right: auto;">
+  <a href="/basket/products" class="button is-link" style="width: 100%; margin-bottom: 10px;">Products</a>
+  <br>
+  <a href="/basket/products/edit" class="button is-link" style="width: 100%; margin-bottom: 10px;">Product settings</a>
+  <a href="/basket/shipping/edit" class="button is-link" style="width: 100%; margin-bottom: 10px;">Shipping settings</a>
+  <a href="/basket/allreceipts" class="button is-link" style="width: 100%; margin-bottom: 10px;">Accounting with receipts</a>
+  <br>
+  <a href="/basket/company/edit" class="button is-link" style="width: 100%; margin-bottom: 10px;">Edit company data</a>
+  <a href="/basket/translations/edit" class="button is-link" style="width: 100%; margin-bottom: 10px;">Edit translations</a>
+  <br>
+  <a href="/basket/pdfreceipt/login" class="button is-link" style="width: 100%; margin-bottom: 10px;">Login to receipts</a>
+  <a href="/basket/allreceiptspdf" class="button is-link" style="width: 100%; margin-bottom: 10px;">All receipts</a>
 </div>
 #end proc
 #
@@ -140,13 +142,12 @@
   <div id="buyFront">
     <h1>Basket settings</h1>
 
-    # let (n, v, d, u) = pluginGetDetails("basket")
     <div id="pluginDetails">
       <hr>
-      <div> <b>Package:</b> ${n}</div>
-      <div> <b>Version:</b> ${v}</div>
-      <div> <b>Description:</b><br>${d}</div>
-      <div> <b>URL:</b> <a href="${u}">${u}</a></div>
+      <div> <b>Package:</b> ${basketN}</div>
+      <div> <b>Version:</b> ${basketV}</div>
+      <div> <b>Description:</b><br>${basketD}</div>
+      <div> <b>URL:</b> <a href="${basketU}">${basketU}</a></div>
       <hr>
     </div>
 
@@ -173,7 +174,7 @@
 # result = ""
 #
 #
-# let setMain = getRow(db, sql("SELECT receipt_nr_next, companyDescription, paymentMethod, companyName, conditions, mailOrder, mailShipped, countries, language, languages, translation FROM basket_settings;"))
+# let setMain = getRow(db, sql("SELECT receipt_nr_next, companyDescription, paymentMethod, companyName, conditions, mailOrder, mailShipped, countries FROM basket_settings;"))
 #
 #
 <link rel="stylesheet" href="/css/basket_private.css">
@@ -250,15 +251,45 @@
 
       <br>
 
+      <button type="submit" class="button is-success" style="width: 200px;">Save</button>
+    </form>
+
+    <hr>
+
+  </div>
+
+</div>
+
+#end proc
+#
+#
+#
+#proc genBasketTranslations*(db: DbConn): string =
+# result = ""
+#
+#
+# let setMain = getRow(db, sql("SELECT countries, language, languages, translation FROM basket_settings;"))
+#
+#
+<link rel="stylesheet" href="/css/basket_private.css">
+
+<div id="buy">
+
+  <div id="buyBought">
+
+    <h1>Edit translations settings</h1>
+
+    <form method="POST" action="/basket/translations/edit">
+
       <h4>Selected language</h4>
       <p>Language used for customer</p>
       <div class="select is-success">
           <select name="language">
-            # for lang in split(setMain[9], "\n"):
-            #   if split(setMain[9], "\n").len() == 1:
+            # for lang in split(setMain[2], "\n"):
+            #   if split(setMain[2], "\n").len() == 1:
                 <option selected value="${lang}">${lang}</option>
-            #   elif setMain[8] == lang:
-                <option selected value="${setMain[8]}">${setMain[8]}</option>
+            #   elif setMain[1] == lang:
+                <option selected value="${setMain[1]}">${setMain[1]}</option>
             #   else:
                 <option value="${lang}">${lang}</option>
             #   end if
@@ -270,13 +301,19 @@
 
       <h4>Translations languages</h4>
       <p>Only 1 identifer per line!</p>
-      <textarea class="textarea" name="languages">${setMain[9]}</textarea>
+      <textarea class="textarea" name="languages">${setMain[2]}</textarea>
 
       <br>
 
       <h4>Translations</h4>
-      <p>Copy paste everything, then change the language identifer (e.g. EN) to your language.</p>
-      <textarea class="textarea" name="translation">${setMain[10]}</textarea>
+      <p>Copy paste every word/sentence, then change the language identifer (e.g. EN) to your language.</p>
+      <textarea class="textarea" name="translation" rows="20">${setMain[3]}</textarea>
+
+      <br>
+
+      <h4>JS translations</h4>
+      <p>Add your language to the translations. Have you somehow deleted the JS, than you can restore <a href="/basket/translations/jsrestore">everything here</a> (deletes all and recreates it).</p>
+      <textarea class="textarea" name="jstranslation" rows="20">${readFile("public/js/basket_ui_" & basketV & ".js")}</textarea>
 
       <br>
 

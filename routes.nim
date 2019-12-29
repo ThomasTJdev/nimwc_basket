@@ -16,7 +16,7 @@
   #[
     Settings admin: Edit settings
   ]#
-  # Edit settings page
+  # Edit company
   get "/basket/company/edit":
     createTFD()
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
@@ -24,7 +24,7 @@
 
     resp genMain(c, genBasketCompany(db))
 
-  # Edit main settings
+  # Edit company
   post "/basket/company/edit":
     createTFD()
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
@@ -33,11 +33,43 @@
     let mailOrder = if @"mailOrder" == "on": "true" else: "false"
     let mailShipped = if @"mailShipped" == "on": "true" else: "false"
 
-    exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?, companyName = ?, companyDescription = ?, paymentMethod = ?, conditions = ?, mailOrder = ?, mailShipped = ?, countries = ?, language = ?, languages = ?, translation = ?"), @"receipt_nr_next", @"companyName", @"companyDescription", @"paymentMethod", @"conditions", mailOrder, mailShipped, @"countries", @"language", @"languages", @"translation")
-
-    langTable = basketLangGen(db)
+    exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?, companyName = ?, companyDescription = ?, paymentMethod = ?, conditions = ?, mailOrder = ?, mailShipped = ?, countries = ?"), @"receipt_nr_next", @"companyName", @"companyDescription", @"paymentMethod", @"conditions", mailOrder, mailShipped, @"countries")
 
     redirect("/basket/company/edit")
+
+  # Edit translation
+  get "/basket/translations/edit":
+    createTFD()
+    if not c.loggedIn or c.rank notin [Admin, Moderator]:
+      redirect("/")
+
+    resp genMain(c, genBasketTranslations(db))
+
+  # Edit translation
+  post "/basket/translations/edit":
+    createTFD()
+    if not c.loggedIn or c.rank notin [Admin, Moderator]:
+      redirect("/")
+
+    exec(db, sql("UPDATE basket_settings SET language = ?, languages = ?, translation = ?"), @"language", @"languages", @"translation")
+
+    # Update translations
+    langTable = basketLangGen(db)
+
+    # Write JS file
+    writeFile("public/js/basket_ui_" & basketV & ".js", @"jstranslation")
+
+    redirect("/basket/translations/edit")
+
+  # Restore JS file
+  get "/basket/translations/jsrestore":
+    createTFD()
+    if not c.loggedIn or c.rank notin [Admin, Moderator]:
+      redirect("/")
+
+    copyFile(getAppDir().replace("nimwcpkg") / "plugins/basket/public/basket_ui.js", "public/js/basket_ui_" & basketV & ".js")
+
+    redirect("/basket/translations/edit")
 
 
 

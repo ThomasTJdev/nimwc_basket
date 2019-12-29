@@ -21,6 +21,7 @@
 # end if
 
 <link rel="stylesheet" href="/css/basket_private.css">
+<script src="/js/basket_ui_${basketV}.js" defer></script>
 
 <div id="buy" class="customerData">
   <input id="userLang" value="${lang}" style="display: none;">
