@@ -190,6 +190,7 @@
         </div>
         # end for
       </div>
+      <input id="shippingdetails" value="" style="display: none;">
 
       <br>
       <div class="has-text-centered">

@@ -39,7 +39,7 @@
           #for shipping in allShipping:
             <tr class="shippingEdit" id="${shipping[0]}">
               <td>${shipping[1]}</td>
-              <td>${shipping[2].substr(0,122)}</td>
+              <td>${shipping[2]}</td>
               <td>${shipping[3]}</td>
               <td>${shipping[4]}</td>
               <td>${shipping[5]}</td>
