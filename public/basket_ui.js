@@ -261,6 +261,7 @@ function doTheBuy() {
       parShipping = radios[i].value;
     }
   }
+  var parShippingDetails = document.getElementById("shippingdetails").value;
 
   // Accept
   var parAcc = document.getElementById("acceptBuy").checked;
@@ -288,6 +289,7 @@ function doTheBuy() {
     country: parCountry,
     company: document.getElementById("buyCompany").value,
     shipping: parShipping,
+    shippingDetails: parShippingDetails,
     grecaptcharesponse: recaptcha
   }
 
