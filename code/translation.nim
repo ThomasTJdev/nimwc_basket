@@ -144,6 +144,9 @@ paymentCanceled_DK = Annulleret
 products_EN = Products
 products_DK = Varer
 
+shippingDetails_EN = Shipping details
+shippingDetails_DK = Leveringsdetaljer
+
 clickToBuy_EN = Click on a product to buy it.
 clickToBuy_DK = Klik på et produkt for at købe det.
 
