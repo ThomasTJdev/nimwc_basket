@@ -244,7 +244,7 @@
   get "/basket/buynow/@identifier":
     createTFD()
 
-    if getValue(db, sql("SELECT id FROM basket_products WHERE identifier = ?"), @"identifier") == "":
+    if getValue(db, sql("SELECT id FROM basket_products WHERE identifier = ? AND (active IS NULL or active = '1');"), @"identifier") == "":
       redirect("/")
 
     resp genMain(c, genBuyNow(db, @"identifier"))

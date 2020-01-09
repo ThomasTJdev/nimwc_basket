@@ -6,7 +6,7 @@
 #proc genBasketProductEdit*(db: DbConn): string =
 # result = ""
 #
-# let allProducts = getAllRows(db, sql("SELECT id, identifier, productName, productDescription, price, vat, valuta, picture FROM basket_products;"))
+# let allProducts = getAllRows(db, sql("SELECT id, identifier, productName, productDescription, price, vat, valuta, picture, active FROM basket_products;"))
 #
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_private.js" defer></script>
@@ -35,6 +35,7 @@
             <th>VAT</th>
             <th>Valuta</th>
             <th>Picture</th>
+            <th>Active</th>
           </tr>
         </thead>
         <tbody>
@@ -51,6 +52,13 @@
                   False
                 # else:
                   True
+                # end if
+              </td>
+              <td>
+                # if product[8] == "0":
+                  Not active
+                # else:
+                  Active
                 # end if
               </td>
             </tr>
@@ -133,6 +141,16 @@
         </div>
       </div>
 
+      <label>Active</label>
+      <br>
+      <div class="select is-info">
+        <select id="productEditActive" name="active">
+          <option value="1">Active</option>
+          <option value="0">Not active</option>
+        </select>
+      </div>
+
+      <br><br>
       <label>Product picture (not working yet)</label>
       <div class="file has-name">
         <label class="file-label">

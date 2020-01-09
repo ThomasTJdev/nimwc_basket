@@ -123,6 +123,7 @@ proc basketStart*(db: DbConn) =
     countries           VARCHAR(1000),
     mailOrder           VARCHAR(10),
     mailShipped         VARCHAR(10),
+    mailAdminBought     VARCHAR(10),
     languages           TEXT,
     language            VARCHAR(10),
     translation         TEXT,
@@ -145,6 +146,7 @@ proc basketStart*(db: DbConn) =
     vat                 INTEGER,
     valuta              VARCHAR(10),
     picture             TEXT,
+    active              INTEGER,
     modified timestamp not null default (STRFTIME('%s', 'now')),
     creation timestamp not null default (STRFTIME('%s', 'now'))
   );""", []):
@@ -193,6 +195,7 @@ proc basketStart*(db: DbConn) =
     zip         VARCHAR(100),
     country     VARCHAR(100),
     shipping    INTEGER,
+    shippingDetails VARCHAR(1000),
     payment_received VARCHAR(100),
     shipped     VARCHAR(100),
     modified timestamp not null default (STRFTIME('%s', 'now')),

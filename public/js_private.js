@@ -53,13 +53,18 @@ if ($productEditRow.length > 0) {
         element.classList.toggle("is-active");
       }
 
-      var childs = el.querySelectorAll("td")
+      var childs = el.querySelectorAll("td");
       document.getElementById("productEditIdentifier").value = childs[0].innerText;
       document.getElementById("productEditName").value = childs[1].innerText;
       document.getElementById("productEditDescription").value = childs[2].innerText;
       document.getElementById("productEditPrice").value = childs[3].innerText;
       document.getElementById("productEditVat").value = childs[4].innerText;
       document.getElementById("productEditValuta").value = childs[5].innerText;
+      if (childs[7].innerText == "Active") {
+        document.getElementById("productEditActive").value = "1";
+      } else {
+        document.getElementById("productEditActive").value = "0";
+      }
 
       document.getElementById("formProduct").action = "/basket/products/edit";
 

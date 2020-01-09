@@ -478,7 +478,7 @@
 #proc genBaskerProductoverview*(db: DbConn): string =
 # result = ""
 #
-# let allProducts = getAllRows(db, sql("SELECT productName, productDescription, price, vat, valuta, identifier FROM basket_products;"))
+# let allProducts = getAllRows(db, sql("SELECT productName, productDescription, price, vat, valuta, identifier FROM basket_products WHERE active IS NULL or active = '1';"))
 
 <link rel="stylesheet" href="/css/basket_private.css">
 
