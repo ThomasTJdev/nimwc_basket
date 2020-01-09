@@ -32,8 +32,9 @@
 
     let mailOrder = if @"mailOrder" == "on": "true" else: "false"
     let mailShipped = if @"mailShipped" == "on": "true" else: "false"
+    let mailAdminBought = if @"mailAdminBought" == "on": "true" else: "false"
 
-    exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?, companyName = ?, companyDescription = ?, paymentMethod = ?, conditions = ?, mailOrder = ?, mailShipped = ?, countries = ?"), @"receipt_nr_next", @"companyName", @"companyDescription", @"paymentMethod", @"conditions", mailOrder, mailShipped, @"countries")
+    exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?, companyName = ?, companyDescription = ?, paymentMethod = ?, conditions = ?, mailOrder = ?, mailShipped = ?, mailAdminBought = ?, countries = ?"), @"receipt_nr_next", @"companyName", @"companyDescription", @"paymentMethod", @"conditions", mailOrder, mailShipped, mailAdminBought, @"countries")
 
     redirect("/basket/company/edit")
 
@@ -338,10 +339,9 @@
                     filepath,
                     $receipt_nr)
 
-      when defined(adminnotify):
-        let adminMessage = """There's a new buyer!<br><br>$1 has bought $2 for $3.""" % [@"name", productData[3], $totalPrice & " " & productData[2]]
-
-        asyncCheck sendAdminMailNow("New subscriber", adminMessage)
+    if getValue(db, sql("SELECT mailAdminBought FROM basket_settings;")) == "true":
+      let adminMessage = """There's a new buyer!<br><br>$1 has bought $2 for $3.""" % [@"name", productData[3], $totalPrice & " " & productData[2]]
+      asyncCheck sendAdminMailNow("New buyer", adminMessage)
 
     resp genBuyShowPdf(db, email, @"password", receipts)
 

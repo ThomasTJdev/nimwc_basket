@@ -174,7 +174,7 @@
 # result = ""
 #
 #
-# let setMain = getRow(db, sql("SELECT receipt_nr_next, companyDescription, paymentMethod, companyName, conditions, mailOrder, mailShipped, countries FROM basket_settings;"))
+# let setMain = getRow(db, sql("SELECT receipt_nr_next, companyDescription, paymentMethod, companyName, conditions, mailOrder, mailShipped, countries, mailAdminBought FROM basket_settings;"))
 #
 #
 <link rel="stylesheet" href="/css/basket_private.css">
@@ -246,6 +246,15 @@
           <input type="checkbox" name="mailShipped">
           # end if
           Send an email to customer when order is shipped.
+        </label>
+
+        <label class="checkbox">
+          # if setMain[8] == "true":
+          <input type="checkbox" name="mailAdminBought" checked>
+          # else:
+          <input type="checkbox" name="mailAdminBought">
+          # end if
+          Send an email to admin email when customer buys.
         </label>
       </div>
 
