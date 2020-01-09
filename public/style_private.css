@@ -62,6 +62,9 @@ div#buyNow h3,
 div#buyNow h1 {
   text-align: center;
 }
+div#buyNow .wipshippingdetails {
+  display: none;
+}
 div.customerData h1 {
   font-size: 3rem;
 }

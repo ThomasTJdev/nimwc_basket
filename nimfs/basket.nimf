@@ -190,7 +190,14 @@
         </div>
         # end for
       </div>
-      <input id="shippingdetails" value="" style="display: none;">
+
+      <div class="wipshippingdetails">
+        <br>
+        <label>${basketLang("shippingDetails")}</label>
+        <div class="shippingdetails">
+          <input id="shippingdetails" value="" class="input is-info">
+        </div>
+      </div>
 
       <br>
       <div class="has-text-centered">

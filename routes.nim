@@ -112,7 +112,7 @@
     if getValue(db, sql("SELECT identifier FROM basket_products WHERE identifier = ? AND id IS NOT ?"), @"identifer", @"id") != "":
       resp("Identifier already exists")
 
-    exec(db, sql("UPDATE basket_products SET identifier = ?, productName = ?, productDescription = ?, price = ?, vat = ?, valuta = ? WHERE id = ?;"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"id")
+    exec(db, sql("UPDATE basket_products SET identifier = ?, productName = ?, productDescription = ?, price = ?, vat = ?, valuta = ?, active = ? WHERE id = ?;"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active", @"id")
 
     redirect("/basket/products/edit")
 
@@ -299,7 +299,7 @@
 
     # Create purchase data
     # Single product, otherwise "multiple_product_id"
-    let id = insertID(db, sql("INSERT INTO basket_purchase (product_id, price, vat, valuta, productcount, email, salt, password, name, company, address, phone, city, zip, country, shipping, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", productData[0], productData[1], productData[2], @"productcount", email, salt, password, @"name", @"company", @"address", @"phone", @"city", @"zip", @"country", @"shipping", "notchecked", $receipt_nr)
+    let id = insertID(db, sql("INSERT INTO basket_purchase (product_id, price, vat, valuta, productcount, email, salt, password, name, company, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", productData[0], productData[1], productData[2], @"productcount", email, salt, password, @"name", @"company", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
     if id == -1: # or id.len() == 0:
       resp("Der skete en fejl.")
 
@@ -324,6 +324,7 @@
         supportEmail = dict.getSectionValue("SMTP", "SMTPEmailSupport")
         mailSubject  = basketLang("mailSubjectCongrats")
         mailMsg      = basketLang("mailMsgCongrats")
+
       asyncCheck sendBasketReceipt(email,
                     mailSubject.format(title, productData[3]),
                     mailMsg.format(@"name",
@@ -337,10 +338,10 @@
                     filepath,
                     $receipt_nr)
 
-      #asyncCheck sendMailNow(
-      #          mailSubjectCongrats.format(title, productData[3]),
-      #          mailMsgCongrats.format(@"name", productData[3], $totalPrice & " " & productData[2], payment, mainURL & "/basket/pdfreceipt/login", supportEmail, title, receipt_nr),
-      #          @"email")
+      when defined(adminnotify):
+        let adminMessage = """There's a new buyer!<br><br>$1 has bought $2 for $3.""" % [@"name", productData[3], $totalPrice & " " & productData[2]]
+
+        asyncCheck sendAdminMailNow("New subscriber", adminMessage)
 
     resp genBuyShowPdf(db, email, @"password", receipts)
 
