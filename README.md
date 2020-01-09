@@ -9,7 +9,23 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 * [nimPdf](https://github.com/jangko/nimpdf) - `nimble install nimpdf`
 * [mime](https://github.com/enthus1ast/nimMime) - Clone the repo and run `nimble install`
 
+
 ## Changelog
+### v0.4
+* Remove cutoff of description of products and shipping.
+* Send an email to the admin, when product is bought (activate in settings)
+```
+ALTER TABLE basket_settings ADD COLUMN mailAdminBought VARCHAR(10);
+```
+* Deactivate/activate a product
+```
+ALTER TABLE basket_products ADD COLUMN active INTEGER;
+```
+* New DB column to store custom shipping details (disabled by default in css `.wipshippingdetails`)
+```
+ALTER TABLE basket_purchase ADD COLUMN shippingDetails VARCHAR(1000);
+```
+
 ### v0.3
 * Minor design
 * Full JS translation
