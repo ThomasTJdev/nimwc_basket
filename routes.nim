@@ -238,7 +238,7 @@
   get "/basket/products":
     createTFD()
 
-    resp genMain(c, genBaskerProductoverview(db))
+    resp genMain(c, genBaskerProductoverview(db, c.loggedIn))
 
 
   # Access the buy now page
@@ -249,7 +249,8 @@
       resp genMain(c, genBuyNow(db, c.loggedIn, @"products", singleProduct=false))
 
     else:
-      if getValue(db, sql("SELECT id FROM basket_products WHERE identifier = ? AND (active IS NULL or active = '1');"), @"identifier") == "":
+      let active = if c.loggedIn: "" else: " AND (active IS NULL or active = '1')"
+      if getValue(db, sql("SELECT id FROM basket_products WHERE identifier = ?" & active), @"identifier") == "":
         redirect("/")
 
     resp genMain(c, genBuyNow(db, c.loggedIn, @"identifier"))
