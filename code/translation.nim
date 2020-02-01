@@ -159,8 +159,8 @@ receiver_DK = Modtager
 buyOf_EN = Buy of
 buyOf_DK = Køb af
 
-dateForOrder_EN = Date for order
-dateForOrder_DK = Dato for bestilling
+dateForOrder_EN = The receipt has been generated the
+dateForOrder_DK = Fakturaen er genereret den
 
 description_EN = Description
 description_DK = Beskrivelse
