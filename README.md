@@ -13,6 +13,7 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 ## Changelog
 ### v0.5
 * Create receipts for private products
+* Allow for buying multiple products
 
 ```sql
 ALTER TABLE basket_purchase ADD COLUMN multiple_product_count VARCHAR(100);
