@@ -68,10 +68,10 @@
 <div id="shipping-modal" class="modal">
   <div class="modal-background"></div>
   <div class="modal-card" style="width: 400px;">
-    <header id="modal-card-head" class="modal-card-head">
+    <div id="modal-card-head" class="modal-card-head">
       <p id="shipping-title" class="modal-card-title">Shipping</p>
       <button class="delete" aria-label="close"></button>
-    </header>
+    </div>
     <section id="modal-card-body" class="modal-card-body scrollbar">
 
       <form id="formShipping" method="POST" action="/basket/shipping/">
@@ -117,10 +117,10 @@
     </form>
 
     </section>
-    <footer class="modal-card-foot">
+    <div class="modal-card-foot">
       <button id="shipping-close" class="button">Close</button>
       <button type="button" class="button is-success" onclick="document.getElementById('formShipping').submit()">Save</button>
-    </footer>
+    </div>
   </div>
 </div>
 

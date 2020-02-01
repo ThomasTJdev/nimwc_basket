@@ -234,10 +234,10 @@
 <div id="receipt-modal" class="modal">
   <div class="modal-background"></div>
   <div class="modal-card" style="width: 400px;">
-    <header id="modal-card-head" class="modal-card-head">
+    <div id="modal-card-head" class="modal-card-head">
       <p id="buy-title" class="modal-card-title">Receipt</p>
       <button class="delete" aria-label="close"></button>
-    </header>
+    </div>
     <section id="modal-card-body" class="modal-card-body scrollbar">
       <p id="buy-text" style="color: black;"></p>
 
@@ -324,9 +324,9 @@
       </div>
 
     </section>
-    <footer class="modal-card-foot">
+    <div class="modal-card-foot">
       <button id="close-buy" class="button">Close</button>
-    </footer>
+    </div>
   </div>
 </div>
 #end proc
