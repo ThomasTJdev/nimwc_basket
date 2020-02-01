@@ -1,4 +1,4 @@
-# Copyright 2019 - Thomas T. Jarløv
+# Copyright 2020 - Thomas T. Jarløv
 
 import datetime2human, math, strutils, db_sqlite, times, os
 import unicode except strip
@@ -279,10 +279,10 @@ proc drawRow(doc: PDF, productName, buyNumber, buyPrice, buyPricetotal, buyVatTo
   return row1Height
 
 
-proc content(db: DbConn, doc: PDF, id, email: string) =
+proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
   ## PDF content
 
-  let buyInfo  = getRow(db, sql("SELECT price, vat, productcount, email, name, receipt_nr, payment_received, company, address, city, creation, valuta, shipping, product_id, zip, country, phone FROM basket_purchase WHERE id = ? AND email = ?"), id, email)
+  let buyInfo  = getRow(db, sql("SELECT price, vat, productcount, email, name, receipt_nr, payment_received, company, address, city, creation, valuta, shipping, product_id, zip, country, phone, multiple_product_id, multiple_product_count FROM basket_purchase WHERE id = ? AND email = ?"), id, email)
   #[
     0) price,
     1) vat,
@@ -301,48 +301,126 @@ proc content(db: DbConn, doc: PDF, id, email: string) =
     14) zip
     15) country
     16) phone
+    17) multi ID
+    18) multi count
   ]#
 
   # Basket
-  let buyPrice  = buyInfo[0]
-  let buyVat    = buyInfo[1]
-  let buyNumber = buyInfo[2]
-  let buyDate   = buyInfo[10]
-  let buyValuta = buyInfo[11]
+  var
+    buyPrice: string
+    buyVat: string
+    buyNumber: string
+    buyMultiNumber: string
+    buyDate: string
+    buyValuta: string
+    buyship: string
+    buyProductID: string
+    buyMultiID: string
 
-  let productTotalVat   = parseInt(buyVat) * parseInt(buyNumber)
-  let productTotalPrice = parseInt(buyPrice) * parseInt(buyNumber)
-  let productTotal      = productTotalVat + productTotalPrice
+    productTotalVat: int
+    productTotalPrice: int
+    productTotal: int
 
-  var customerInfo = buyInfo[8] & "\n" & buyInfo[14] & " " & buyInfo[9] & "\n" & buyInfo[15] & "\n\n" & buyInfo[4] & "\n" & buyInfo[3]
-  customerInfo = if buyInfo[16] != "": customerInfo & "\n" & buyInfo[16] else: customerInfo
-  customerInfo = if buyInfo[7] != "": buyInfo[7] & "\n" & customerInfo else: customerInfo
+    buyInfoMulti: Row
 
-  # Product
-  let productData = getRow(db, sql("SELECT productName, productDescription FROM basket_products WHERE id = ?"), buyInfo[13])
-  let productName = productData[0]
-  let productDesr = productData[1]
+    # Product
+    productName: string
+    productDesr: string
+
+    # Ship
+    shipName: string
+    shipDesr: string
+    shipValuta: string
+    shipPrice: int
+    shipVat: int
+    shipTotalPrice: int
+
+    # Price
+    totalPrice: int
+    totalVat: int
+    total: int
+
+  let
+    cusEmail     = buyInfo[3]
+    cusName      = buyInfo[4]
+    cusCompany   = buyInfo[7]
+    cusAddress   = buyInfo[8]
+    cusCity      = buyInfo[9]
+    cusZip       = buyInfo[14]
+    cusCountry   = buyInfo[15]
+    cusPhone     = buyInfo[16]
+
+
+  buyPrice  = buyInfo[0]
+  buyVat    = buyInfo[1]
+  buyDate   = buyInfo[10]
+  buyValuta = buyInfo[11]
+  buyShip   = buyInfo[12]
+
+
+  if multi != "true":
+    buyNumber    = buyInfo[2]
+    buyProductID = buyInfo[13]
+
+    productTotalVat   = parseInt(buyVat) * parseInt(buyNumber)
+    productTotalPrice = parseInt(buyPrice) * parseInt(buyNumber)
+    productTotal      = productTotalVat + productTotalPrice
+
+    # Product
+    let productData = getRow(db, sql("SELECT productName, productDescription FROM basket_products WHERE id = ?"), buyInfo[13])
+
+    productName = productData[0]
+    productDesr = productData[1]
+
+  else:
+    buyMultiID     = buyInfo[17]
+    buyMultiNumber = buyInfo[18]
+
+    let productCount = split(buyMultiNumber, ",")
+    var count: int
+
+    for i in split(buyMultiID, ","):
+      buyInfoMulti = getRow(db, sql("SELECT productName, productDescription, price, vat FROM basket_products WHERE id = ?"), i)
+
+      productTotalPrice += parseInt(buyInfoMulti[2]) * parseInt(productCount[count])
+      productTotalVat   += parseInt(buyInfoMulti[3]) * parseInt(productCount[count])
+
+      count += 1
+
+    productTotal = productTotalVat + productTotalPrice
+
+
+  # Customer info
+  var customerInfo = cusAddress & "\n" & cusZip & " " & cusCity & "\n" & cusCountry & "\n\n" & cusName & "\n" & cusEmail
+  if cusPhone != "":
+    customerInfo = customerInfo & "\n" & cusPhone
+  if cusCompany != "":
+    customerInfo = cusCompany & "\n" & customerInfo
+
 
   # Shipping
-  let shipData = getRow(db, sql("SELECT name, description, price, vat, valuta FROM basket_shipping WHERE id = ?"), buyInfo[12])
-  let shipName    = shipData[0]
-  let shipDesr    = shipData[1]
-  let shipPrice   = parseInt(shipData[2])
-  let shipVat     = parseInt(shipData[3])
-  let shipValuta  = shipData[4]
+  if buyShip != "" and buyShip == "0":
+    let shipData = getRow(db, sql("SELECT name, description, price, vat, valuta FROM basket_shipping WHERE id = ?"), buyShip)
+    shipName    = shipData[0]
+    shipDesr    = shipData[1]
+    shipPrice   = parseInt(shipData[2])
+    shipVat     = parseInt(shipData[3])
+    shipValuta  = shipData[4]
 
-  let shipTotalPrice = shipPrice + shipVat
+    shipTotalPrice = shipPrice + shipVat
 
   # Your company data
-  let mainInfo = getRow(db, sql("SELECT receipt_nr_next, companyName, companyDescription, paymentMethod FROM basket_settings"))
-  let companyName = mainInfo[1]
-  let companyDesr = mainInfo[2]
-  let paymentMeth = mainInfo[3]
+  let
+    mainInfo = getRow(db, sql("SELECT receipt_nr_next, companyName, companyDescription, paymentMethod FROM basket_settings"))
+    companyName = mainInfo[1]
+    companyDesr = mainInfo[2]
+    paymentMeth = mainInfo[3]
 
   # Total price
-  let totalPrice = productTotalPrice + shipPrice
-  let totalVat   = productTotalVat + shipVat
-  let total      = totalPrice + totalVat
+  totalPrice = productTotalPrice + shipPrice
+  totalVat   = productTotalVat + shipVat
+  total      = totalPrice + totalVat
+ 
 
 
   # Setup PDF
@@ -410,7 +488,10 @@ proc content(db: DbConn, doc: PDF, id, email: string) =
 
   # Second heading
   fontH4()
-  doc.drawText(15, y, basketLang("buyOf") & ": " & productName)
+  if multi != "true":
+    doc.drawText(15, y, basketLang("buyOf") & ": " & productName)
+  else:
+    doc.drawText(15, y, basketLang("buyOf") & ":")
   y += 10.0
 
   # Date
@@ -419,9 +500,16 @@ proc content(db: DbConn, doc: PDF, id, email: string) =
   y += 5.0
 
   # Description
-  let productDesrHeight = rowHeightCalc(doc, 10, pageWidth - 5, productDesr)
-  doc.cellDrawRectText(15, y, (pageWidth - 5), productDesrHeight, productDesr, isCell=false)
-  y += 3.0 + productDesrHeight
+  if multi != "true":
+    let desr = if cusmsg == "": productDesr else: cusmsg & "\n\n" & productDesr
+    let productDesrHeight = rowHeightCalc(doc, 10, pageWidth - 5, desr)
+    doc.cellDrawRectText(15, y, (pageWidth - 5), productDesrHeight, desr, isCell=false)
+    y += 3.0 + productDesrHeight
+
+  elif cusmsg != "":
+    let productDesrHeight = rowHeightCalc(doc, 10, pageWidth - 5, cusmsg)
+    doc.cellDrawRectText(15, y, (pageWidth - 5), productDesrHeight, cusmsg, isCell=false)
+    y += 3.0 + productDesrHeight
 
 
   # Purchase details
@@ -458,10 +546,25 @@ proc content(db: DbConn, doc: PDF, id, email: string) =
   y += rowHeadingHeight #+ 5
 
   # Insert purchase details
-  y += drawRow(doc, productName, buyNumber, buyPrice, $productTotalPrice, $productTotalVat, buyValuta, y, x, c1, c2, c3, c4, c5)
+  if multi != "true":
+    y += drawRow(doc, productName, buyNumber, buyPrice, $productTotalPrice, $productTotalVat, buyValuta, y, x, c1, c2, c3, c4, c5)
+  else:
+    let productCount = split(buyMultiNumber, ",")
+    var count: int
+
+    for i in split(buyMultiID, ","):
+      buyInfoMulti = getRow(db, sql("SELECT productName, productDescription, price, vat, valuta FROM basket_products WHERE id = ?"), i)
+      productTotalPrice = parseInt(buyInfoMulti[2]) * parseInt(productCount[count])
+      productTotalVat   = parseInt(buyInfoMulti[3]) * parseInt(productCount[count])
+
+      # Use pageCheckText
+      y += drawRow(doc, buyInfoMulti[0], productCount[count], buyInfoMulti[2], $productTotalPrice, $productTotalVat, buyInfoMulti[4], y, x, c1, c2, c3, c4, c5)
+
+      count += 1
 
   # Insert shipping details
-  y += drawRow(doc, shipName, "1", $shipPrice, $shipPrice, $shipVat, shipValuta, y, x, c1, c2, c3, c4, c5)
+  if buyShip != "" and buyShip == "0":
+    y += drawRow(doc, shipName, "1", $shipPrice, $shipPrice, $shipVat, shipValuta, y, x, c1, c2, c3, c4, c5)
 
   y += 7.0
 
@@ -538,12 +641,13 @@ proc content(db: DbConn, doc: PDF, id, email: string) =
 
   fontStd()
   let paymentMethHeight = rowHeightCalc(doc, 10, pageWidth - 5, paymentMeth)
+  if pageCheckHeight(doc, size, pageHeight, y, paymentMethHeight): y = 25
   doc.cellDrawRectText(15, y, (pageWidth - 5), paymentMethHeight, paymentMeth, isCell=false)
   y += 7.0 + paymentMethHeight
 
 
 
-proc pdfBuyGenerator*(db: DbConn, id, path, email: string) =
+proc pdfBuyGenerator*(db: DbConn, id, path, email, multi, cusmsg: string) =
   ## Generate PDF with machine safety
 
   # Setup doc options
@@ -556,7 +660,7 @@ proc pdfBuyGenerator*(db: DbConn, id, path, email: string) =
 
   # Generate content
 
-  content(db, doc, id, email)
+  content(db, doc, id, email, multi, cusmsg)
 
   if not doc.writePDF(path):
     echo "ERROR"

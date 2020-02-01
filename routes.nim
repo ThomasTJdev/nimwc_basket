@@ -100,7 +100,7 @@
     if not isDigit(@"vat") and @"vat" != "":
       resp("VAT needs to be a number")
 
-    let id = tryInsertId(db, sql("INSERT INTO basket_products (identifier, productName, productDescription, price, vat, valuta) VALUES (?, ?, ?, ?, ?, ?)"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta")
+    let id = tryInsertId(db, sql("INSERT INTO basket_products (identifier, productName, productDescription, price, vat, valuta, active) VALUES (?, ?, ?, ?, ?, ?, ?)"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active")
 
     redirect("/basket/products/edit")
 
@@ -245,10 +245,14 @@
   get "/basket/buynow/@identifier":
     createTFD()
 
-    if getValue(db, sql("SELECT id FROM basket_products WHERE identifier = ? AND (active IS NULL or active = '1');"), @"identifier") == "":
-      redirect("/")
+    if c.loggedIn and @"identifier" == "multiple":
+      resp genMain(c, genBuyNow(db, c.loggedIn, @"products", singleProduct=false))
 
-    resp genMain(c, genBuyNow(db, @"identifier"))
+    else:
+      if getValue(db, sql("SELECT id FROM basket_products WHERE identifier = ? AND (active IS NULL or active = '1');"), @"identifier") == "":
+        redirect("/")
+
+    resp genMain(c, genBuyNow(db, c.loggedIn, @"identifier"))
 
   # Make the buy
   post "/basket/buynow":
@@ -261,6 +265,8 @@
 
           if isRecaptchaOk:
             redirect("/")
+
+    let isPrivate = if c.loggedIn: true else: false
 
     # Check params
     if @"email".len() == 0 or "@" notin @"email" or "." notin @"email":
@@ -277,21 +283,62 @@
     if @"city".len() == 0:
       resp("Fejl, du mangler at angive din by.")
 
-    if @"productcount" == "" or parseInt(@"productcount") > 10:
+    if @"productcount" == "": # or parseInt(@"productcount") > 10:
       resp("Ønsker du at bestille mere end 10 bøger, skal du skrive en mail for rabat.")
 
     let
       # Password
       salt = makeSalt()
       password = makePassword(passwordRaw, salt)
-
-      # Receipt info
-      productData = getRow(db, sql("SELECT price, vat, valuta, productName FROM basket_products WHERE id = ?"), @"id")
       receipt_nr_next = getValue(db, sql("SELECT receipt_nr_next FROM basket_settings"))
+      
+    var shippingData: Row
+    if @"shipping" != "":
       shippingData = getRow(db, sql("SELECT price, vat FROM basket_shipping WHERE id = ?"), @"shipping")
 
-    if productData.len() == 0:
-      redirect("/")
+    # Receipt info
+    var
+      productData: Row
+      totalPrice: int
+      totalVat: int
+      totalPriceWithShipping: int
+      count: int
+      exist: bool
+
+    let
+      active = if c.loggedIn == true: "" else: " AND active = '1'"
+      productCount = split(@"productcount", ",")
+
+    if @"multi" == "true":
+      for productId in split(@"id", ","):
+        productData = getRow(db, sql("SELECT price, vat, valuta, productName FROM basket_products WHERE id = ?" & active), productId)
+        if productData.len() > 0:
+          exist = true
+
+        totalPrice += parseInt(productData[0]) * parseInt(productCount[count])
+        totalVat   += parseInt(productData[1]) * parseInt(productCount[count])
+        count      += 1
+
+      if not exist:
+        redirect("/")
+
+      if shippingData.len() > 0:
+        totalPriceWithShipping = totalPrice + totalVat + parseInt(shippingData[0]) + parseInt(shippingData[1])
+      else:
+        totalPriceWithShipping = totalPrice + totalVat
+
+    else:
+      productData = getRow(db, sql("SELECT price, vat, valuta, productName FROM basket_products WHERE id = ?" & active), @"id")
+      if productData.len() == 0:
+        redirect("/")
+
+      let productPrice = (parseInt(productData[0]) + parseInt(productData[1])) * parseInt(@"productcount")
+      
+      if shippingData.len() > 0:
+        let shippingPrice = parseInt(shippingData[0]) + parseInt(shippingData[1])
+        totalPriceWithShipping = productPrice + shippingPrice
+      else:
+        totalPriceWithShipping = productPrice
 
     # Update next receipt number, and use current receipt number
     let receipt_nr = if receipt_nr_next == "": "1" else: receipt_nr_next
@@ -300,25 +347,29 @@
 
     # Create purchase data
     # Single product, otherwise "multiple_product_id"
-    let id = insertID(db, sql("INSERT INTO basket_purchase (product_id, price, vat, valuta, productcount, email, salt, password, name, company, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", productData[0], productData[1], productData[2], @"productcount", email, salt, password, @"name", @"company", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
-    if id == -1: # or id.len() == 0:
+    var id: int64
+    if @"multi" == "true":
+      id = insertID(db, sql("INSERT INTO basket_purchase (multiple_product_id, price, vat, valuta, multiple_product_count, email, salt, password, name, company, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", $totalPrice, $totalVat, "", @"productcount", email, salt, password, @"name", @"company", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
+      
+    else:
+      id = insertID(db, sql("INSERT INTO basket_purchase (product_id, price, vat, valuta, productcount, email, salt, password, name, company, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", productData[0], productData[1], productData[2], @"productcount", email, salt, password, @"name", @"company", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
+    
+    if id == -1 or id == 0:
       resp("Der skete en fejl.")
 
     # CREATE PDF
     let filename = $id & "_" & email.multiReplace([("@", "_"), (".", "_")]) & ".pdf"
     let filepath = storageEFS / "receipts" / filename
 
-    pdfBuyGenerator(db, $id, filepath, email)
+    let cusmsg = if c.loggedIn: @"cusmsg" else: ""
+    pdfBuyGenerator(db, $id, filepath, email, @"multi", cusmsg)
 
     let receipts = getAllRows(db, sql("SELECT id, productcount, receipt_nr, creation, password, salt, payment_received, shipped FROM basket_purchase WHERE email = ?"), email)
 
-    let productPrice = (parseInt(productData[0]) + parseInt(productData[1])) * parseInt(@"productcount")
-    let shippingPrice = parseInt(shippingData[0]) + parseInt(shippingData[1])
-    let totalPrice = productPrice + shippingPrice
-
     let payment = getValue(db, sql("SELECT paymentMethod FROM basket_settings;")).replace("\n", "<br>")
 
-    if getValue(db, sql("SELECT mailOrder FROM basket_settings;")) == "true":
+    
+    if @"sendmail" == "true" and getValue(db, sql("SELECT mailOrder FROM basket_settings;")) == "true":
       let
         appDir       = getAppDir().replace("nimwcpkg", "")
         dict         = loadConfig(appDir / "config/config.cfg")
@@ -330,7 +381,7 @@
                     mailSubject.format(title, productData[3]),
                     mailMsg.format(@"name",
                         productData[3],
-                        $totalPrice & " " & productData[2],
+                        $totalPriceWithShipping & " " & productData[2],
                         payment,
                         mainURL & "/basket/pdfreceipt/login",
                         supportEmail,
@@ -340,7 +391,7 @@
                     $receipt_nr)
 
     if getValue(db, sql("SELECT mailAdminBought FROM basket_settings;")) == "true":
-      let adminMessage = """There's a new buyer!<br><br>$1 has bought $2 for $3.""" % [@"name", productData[3], $totalPrice & " " & productData[2]]
+      let adminMessage = """There's a new buyer!<br><br>$1 has bought $2 for $3.""" % [@"name", productData[3], $totalPriceWithShipping & " " & productData[2]]
       asyncCheck sendAdminMailNow("New buyer", adminMessage)
 
     resp genBuyShowPdf(db, email, @"password", receipts)

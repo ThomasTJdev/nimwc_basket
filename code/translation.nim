@@ -105,6 +105,9 @@ totalPriceWithVat_DK = Samlet pris (m. moms)
 acceptConditions_EN = When pressing "Buy" you accept the <a href="/basket/conditions" target="_blank">terms and conditions</a>. There will be generated a receipt.
 acceptConditions_DK = Ved at trykke "Køb" bekræfter du en købsaftale og <a href="/basket/conditions" target="_blank">handelsbetingelserne</a>. Der vil blive genereret en faktura.
 
+sendRecieptEmail_EN = Send email with receipt to your email
+sendRecieptEmail_DK = Send email med fakturaen
+
 congratulations_EN = <h1>Congratulation!</h1><p>You just need to pay, and then your order is on the way.</p><p>We have sent you an email with your receipt. You can also download your receipt below.</p>
 congratulations_DK = <h1>Tillykke!</h1><p>Du skal nu blot betale for varen, og så er den på vej til dig.</p><p>Vi har sendt dig en email med fakturaen. Du kan også downloade din faktura nedenfor.</p>
 
@@ -196,9 +199,8 @@ proc basketLangGen*(db: DbConn): Table[string, string] =
   let tmp = getValue(db, sql("SELECT language FROM basket_settings;")).substr(0,1)
   transLang = if tmp == "": "EN" else: tmp
   var trans = getValue(db, sql("SELECT translation FROM basket_settings;"))
-  if trans == "":
-    exec(db, sql("UPDATE basket_settings SET translation = ?;"), mainTrans)
-    trans = mainTrans
+  exec(db, sql("UPDATE basket_settings SET translation = ?;"), mainTrans)
+  trans = mainTrans
 
   result = initTable[string, string]()
   for line in trans.splitLines:

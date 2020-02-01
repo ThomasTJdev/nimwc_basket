@@ -96,6 +96,27 @@ function isError(response) {
   }
 }
 
+function backToProduct() {
+  document.getElementById("buyProduct").style.display = "block";
+  document.getElementById("buyBuying").style.display = "none";
+}
+function gotoBuying() {
+  var count = document.getElementsByClassName('productcount');
+  for (var i = 0, length = count.length; i < length; i++) {
+    var parNumber = count[i].value;
+    if (parNumber == "") {
+      infoModal(langGen("StopQuantity"));
+      return false;
+    }
+    if (parNumber == "0") {
+      infoModal(langGen("StopQuantity"));
+      return false;
+    }
+  }
+
+  document.getElementById("buyProduct").style.display = "none";
+  document.getElementById("buyBuying").style.display = "block";
+}
 function backToCustomer() {
   document.getElementById("buyBuying").style.display = "block";
   document.getElementById("buyShipping").style.display = "none";
@@ -119,10 +140,10 @@ function gotoAccept() {
   document.getElementById("buyAccept").style.display = "block";
 
   // Update pricing
-  updatePriceCount();
+  //updatePriceCount();
 
   // Customer data
-  var parNumber = document.getElementById("buyProductcount").value;
+  //var parNumber = document.getElementById("buyProductcount").value;
   var parEmail = document.getElementById("buyEmail").value
   var parName = document.getElementById("buyName").value;
   var parPass = document.getElementById("buyPassword").value;
@@ -146,14 +167,30 @@ function gotoAccept() {
   }
 
   // Show data
-  document.getElementById("checkProduct").innerHTML = document.getElementById("productname").value;
-  document.getElementById("checkNumber").innerHTML = parNumber;
-  document.getElementById("checkPrice").innerHTML = document.getElementById("updatedPrice").value;
-  document.getElementById("checkPriceVat").innerHTML = document.getElementById("updatedVat").value;
+  //document.getElementById("checkProduct").innerHTML = document.getElementById("productname").value;
+  //document.getElementById("checkNumber").innerHTML = parNumber;
+
+  var totalPriceWithoutVat = 0;
+  var totalPriceVat = 0;
+
+  var count = document.getElementsByClassName('productcount');
+  for (var i = 0, length = count.length; i < length; i++) {
+    var tmpRawPrice = parseInt(count[i].getAttribute("data-rawprice"), 10);
+    var tmpRawVat = parseInt(count[i].getAttribute("data-rawvat"), 10);
+    var number = parseInt(count[i].value, 10);
+
+    totalPriceWithoutVat += tmpRawPrice * number;
+    totalPriceVat += tmpRawVat * number;
+  }
+  var totalPriceAndShipping = totalPriceWithoutVat + totalPriceVat + parseInt(shippingPrice, 10) + parseInt(shippingVat, 10);
+
+  document.getElementById("checkPrice").innerHTML = totalPriceWithoutVat;
+  document.getElementById("checkPriceVat").innerHTML = totalPriceVat;
   document.getElementById("checkShipping").innerHTML = shippingName;
   document.getElementById("checkShippingPrice").innerHTML = shippingPrice;
   document.getElementById("checkShippingPriceVat").innerHTML = shippingVat;
-  document.getElementById("checkPriceTotal").innerHTML = document.getElementById("priceTotal").value;
+  document.getElementById("checkPriceTotal").innerHTML = totalPriceAndShipping;
+
   document.getElementById("checkName").innerHTML = parName;
   document.getElementById("checkEmail").innerHTML = parEmail;
   document.getElementById("checkPhone").innerHTML = parPhone;
@@ -165,8 +202,7 @@ function gotoAccept() {
 }
 
 function checkCustomerdata() {
-  var parNumber = document.getElementById("buyProductcount").value;
-  var parEmail = document.getElementById("buyEmail").value
+  var parEmail = document.getElementById("buyEmail").value;
   var parName = document.getElementById("buyName").value;
   var parPass = document.getElementById("buyPassword").value;
   var parAdd = document.getElementById("buyAddress").value;
@@ -183,18 +219,11 @@ function checkCustomerdata() {
     infoModal(langGen("StopEmail"));
     return false;
   }
-  if (parPass == "") {
+  if (parPass == "" || parPass.length <= 4) {
     infoModal(langGen("StopPass"));
     return false;
   }
-  if (parNumber == "") {
-    infoModal(langGen("StopQuantity"));
-    return false;
-  }
-  if (parNumber == "0") {
-    infoModal(langGen("StopQuantity"));
-    return false;
-  }
+
   if (parAdd == "") {
     infoModal(langGen("StopAddress"));
     return false;
@@ -240,9 +269,18 @@ function doTheBuy() {
     infoModal(langGen("ErrorContact"));
     return;
   }
+  var multi = document.getElementById("id").getAttribute("data-multi");
 
   // Customer data
-  var parNumber = document.getElementById("buyProductcount").value;
+  var parNumber = "";
+  var count = document.getElementsByClassName('productcount');
+  for (var i = 0, length = count.length; i < length; i++) {
+    if (parNumber != "") {
+      parNumber += ","
+    }
+    parNumber += count[i].value;
+  }
+
   var parEmail = document.getElementById("buyEmail").value
   var parName = document.getElementById("buyName").value;
   var parPass = document.getElementById("buyPassword").value;
@@ -263,12 +301,26 @@ function doTheBuy() {
   }
   var parShippingDetails = document.getElementById("shippingdetails").value;
 
+  // Message
+  var cusMsg = "";
+  if (document.getElementById("custommessage")) {
+    cusMsg = document.getElementById("custommessage").value;
+  }
+
   // Accept
   var parAcc = document.getElementById("acceptBuy").checked;
   if (!parAcc) {
     infoModal(langGen("AcceptTerms"));
     return;
   }
+
+  // Email receipt
+  var sendMail = "true";
+  var parEmailSend = document.getElementById("sendEmail").checked;
+  if (!parEmailSend) {
+    sendMail = "false";
+  }
+
 
   var recaptcha = "";
   var recaptchaDom = document.getElementById("g-recaptcha-response");
@@ -278,6 +330,7 @@ function doTheBuy() {
 
   var params = {
     id: parId,
+    multi: multi,
     productcount: parNumber,
     email: parEmail,
     name: parName,
@@ -290,6 +343,8 @@ function doTheBuy() {
     company: document.getElementById("buyCompany").value,
     shipping: parShipping,
     shippingDetails: parShippingDetails,
+    sendmail: sendMail,
+    cusmsg: cusMsg,
     grecaptcharesponse: recaptcha
   }
 
@@ -337,12 +392,16 @@ function buySuccess(xhr) {
 /*
   UI
 */
-function updatePriceCount() {
-  var price = parseInt(document.getElementById("rawPrice").value, 10);
-  var vat = parseInt(document.getElementById("rawVat").value, 10);
-  var numbers = parseInt(document.getElementById("buyProductcount").value, 10);
-  document.getElementById("updatedPrice").value = price * numbers;
-  document.getElementById("updatedVat").value = vat * numbers;
+function updatePriceTotal() {
+  var count = document.getElementsByClassName('updatedPrice');
+  var priceTotal = 0;
+  for (var i = 0, length = count.length; i < length; i++) {
+    var parNumber = count[i].value;
+    if (parNumber == "" || parNumber == "0" || isNaN(parNumber)) {
+      return false;
+    }
+    priceTotal += parseInt(parNumber, 10);
+  }
 
   var shippingPrice = "";
   var shippingVat = "";
@@ -353,9 +412,21 @@ function updatePriceCount() {
       shippingVat = radios[i].getAttribute("data-vat");
     }
   }
-  var shippingCost = parseInt(shippingPrice, 10) + parseInt(shippingVat, 10);
-  var priceTotal = (price + vat) * numbers + shippingCost;
+  priceTotal += parseInt(shippingPrice, 10);
+  priceTotal += parseInt(shippingVat, 10);
+
   document.getElementById("priceTotal").value = priceTotal;
+}
+function updatePriceCount(el) {
+  var id = el.getAttribute("id");
+  var price = parseInt(el.getAttribute("data-rawPrice"), 10);
+  var vat = parseInt(el.getAttribute("data-rawVat"), 10);
+  var numbers = parseInt(el.value, 10);
+  document.getElementById(el.getAttribute("data-id") + "-updatedPrice").value = price * numbers + vat * numbers;
+  document.getElementById(el.getAttribute("data-id") + "-updatedVat").value = vat * numbers;
+
+  document.getElementById(el.getAttribute("data-id") + "-checkNumber").innerHTML = numbers;
+  updatePriceTotal();
 }
 
 // Colorize input field
@@ -394,7 +465,7 @@ function updateInput(el) {
 function updatePassword(el) {
   var id = el.getAttribute("id");
   var input = document.getElementById(id).value;
-  if (input.length >= 4) {
+  if (input.length > 4) {
     colorStatusOk(id);
   } else {
     colorStatusNot(id);

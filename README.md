@@ -11,6 +11,14 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 
 
 ## Changelog
+### v0.5
+* Create receipts for private products
+
+```sql
+ALTER TABLE basket_purchase ADD COLUMN multiple_product_count VARCHAR(100);
+```
+
+
 ### v0.4
 * Remove cutoff of description of products and shipping.
 * Send an email to the admin, when product is bought (activate in settings)

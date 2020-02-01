@@ -2,10 +2,13 @@
 #
 #
 #
-#proc genBuyNow*(db: DbConn, identifier: string): string =
-# result = ""
+#proc genBuyNow*(db: DbConn, isLoggedIn: bool, identifier: string, singleProduct = true): string =
+# ## If it's a single product, the identifier contains the products
+# ## identifier string, otherwise the identifier contains multiple DB ID's.
 #
-# let productData = getRow(db, sql("SELECT id, price, vat, valuta, productName, productDescription FROM basket_products WHERE identifier = ?"), identifier)
+# let productData = getProductData(db, identifier, singleProduct, isLoggedIn)
+# let productPrice = getProductPrice(db, identifier, singleProduct, isLoggedIn)
+#
 #
 # let shippingData = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta FROM basket_shipping;"))
 #
@@ -13,43 +16,94 @@
 #
 # let lang = getValue(db, sql("SELECT language FROM basket_settings;"))
 #
-# var price: int
-# if productData[2] == "":
-#   price = parseInt(productData[1])
-# else:
-#   price = parseInt(productData[1]) + parseInt(productData[2])
-# end if
+## var price: int
+## if productData[2] == "":
+##   price = parseInt(productData[1])
+## else:
+##   price = parseInt(productData[1]) + parseInt(productData[2])
+## end if
 
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_ui_${basketV}.js" defer></script>
+<input id="userLang" value="${lang}" style="display: none;">
+<input id="priceTotal" value="${parseInt(productPrice[0]) + parseInt(productPrice[1])}" style="display: none;">
+
+# if productData.len() == 1:
+#   for product in productData:
+      <input id="id" value="${product[0]}" data-multi="false" style="display: none;">
+#   end for
+# else:
+  <input id="id" value="${identifier}" data-multi="true" style="display: none;">
+# end if
 
 <div id="buy" class="customerData">
-  <input id="userLang" value="${lang}" style="display: none;">
-  <input id="rawPrice" value="${price}" style="display: none;">
-  <input id="rawVat" value="${productData[2]}" style="display: none;">
-  <input id="priceTotal" value="" style="display: none;">
-  <input id="id" value="${productData[0]}" style="display: none;">
-  <input id="productname" value="${productData[4]}" style="display: none;">
+
 
   <div id="buyBuyingHeading" class="has-text-centered">
+
+    # if productData.len() == 1:
     <h2>${basketLang("buy")}</h2>
-
-    <h1>${productData[4]}</h1>
-
-    # if productData[2] != "" and productData[2] != "0":
-    <h3>${basketLang("pricePer")}: ${parseInt(productData[1]) + parseInt(productData[2])} ${productData[3]} ${basketLang("inclVat")}</h3>
-    # else:
-    <h3>${basketLang("pricePer")}: ${productData[1]} ${productData[3]}</h3>
+    #
+    #   for product in productData:
+          <h2>${product[4]}</h2>
+    #   end for
+    #
+    <hr>
     # end if
 
-    <hr>
 
   </div>
 
 
   <div id="buyNow">
 
-    <div id="buyBuying" class="customerdata">
+    <div id="buyProduct" class="customerdata">
+
+      <h3>${basketLang("productInfo")}</h3>
+
+      <hr>
+
+      # for product in productData:
+
+      <h5>${product[4]}</h5>
+
+      <label>${basketLang("numberOfProducts")}<span class="redAst">*</span></label>
+      <div class="field">
+        <div class="control">
+          <input id="${product[0]}-buyProductcount" type="number" name="productcount" min="1" max="10" value="1" required class="input is-success productcount" data-id="${product[0]}" data-rawPrice="${product[1]}" data-rawVat="${product[2]}" onkeyup="updatePrice(this);updatePriceCount(this);" >
+        </div>
+      </div>
+
+      <label>${basketLang("priceVat")} (${product[3]})</label>
+      <div class="field">
+        <div class="control">
+          <input id="${product[0]}-updatedPrice" type="text" disabled="disabled" class="input is-info updatedPrice" value="${parseInt(product[1]) + parseInt(product[2])}" >
+        </div>
+      </div>
+
+      <label>${basketLang("hereofVat")}</label>
+      <div class="field">
+        <div class="control">
+          <input id="${product[0]}-updatedVat" type="text" disabled="disabled" class="input is-info" value="${product[2]}" >
+        </div>
+      </div>
+
+      #   if productData.len() > 1:
+            <hr>
+      #   end if
+
+      # end for
+
+      <br>
+      <div class="has-text-centered">
+        <button type="button" class="button is-link" onclick="gotoBuying()" style="width: 100px;">${basketLang("next")}</button>
+      </div>
+      <br>
+
+    </div> <!-- End product -->
+
+
+    <div id="buyBuying" class="customerdata" style="display: none;">
 
       <h3>${basketLang("customerData")}</h3>
 
@@ -71,27 +125,6 @@
       <div class="field">
         <div class="control">
           <input id="buyPassword" type="password" name="password" required min="4" max="300" class="input is-info" onkeyup="updatePassword(this);" >
-        </div>
-      </div>
-
-      <label>${basketLang("numberOfProducts")}<span class="redAst">*</span></label>
-      <div class="field">
-        <div class="control">
-          <input id="buyProductcount" type="number" name="productcount" min="1" max="10" value="1" required class="input is-success" onkeyup="updatePrice(this);updatePriceCount();" >
-        </div>
-      </div>
-
-      <label>${basketLang("priceVat")}</label>
-      <div class="field">
-        <div class="control">
-          <input id="updatedPrice" type="text" disabled="disabled" class="input is-info" value="${price}" >
-        </div>
-      </div>
-
-      <label>${basketLang("hereofVat")}</label>
-      <div class="field">
-        <div class="control">
-          <input id="updatedVat" type="text" disabled="disabled" class="input is-info" value="${productData[2]}" >
         </div>
       </div>
 
@@ -159,6 +192,7 @@
 
       <br>
       <div class="has-text-centered">
+        <button type="button" class="button is-warning" onclick="backToProduct()" style="margin-right: 15px; width: 100px;">${basketLang("back")}</button>
         <button type="button" class="button is-link" onclick="gotoShipping()" style="width: 100px;">${basketLang("next")}</button>
       </div>
       <br>
@@ -189,6 +223,20 @@
           </div>
         </div>
         # end for
+        #
+        # if isLoggedIn:
+        <div class="box">
+          <label class="radio">
+            <input class="shippingChoice" type="radio" name="shipping" value="" data-name="No shipping" data-price="0" data-vat="0">
+            <b>No shipping (private receipt)</b>
+          </label>
+          <div class="shippingDetails">
+            <p>
+              This item is only available for logged in users.
+            </p>
+          </div>
+        </div>
+        # end if
       </div>
 
       <div class="wipshippingdetails">
@@ -218,12 +266,28 @@
         <tbody>
           <tr>
             <td class="name">${basketLang("product")}</td>
-            <td id="checkProduct"></td>
+            <td id="checkProduct">
+              # if productData.len() == 1:
+              #   for product in productData:
+                    ${product[4]}
+              #   end for
+              # else:
+              <ul>
+              # for product in productData:
+                <li>(<span id="${product[0]}-checkNumber">1</span>) ${product[4]}</li>
+              # end for
+              </ul>
+              # end if
+            </td>
           </tr>
+          # if productData.len() == 1:
           <tr>
             <td>${basketLang("quantity")}</td>
-            <td id="checkNumber"></td>
+            # for product in productData:
+            <td id="${product[0]}-checkNumber"></td>
+            # end for
           </tr>
+          # end if
           <tr>
             <td>${basketLang("priceNoVat")}</td>
             <td id="checkPrice"></td>
@@ -291,6 +355,14 @@
 
       <hr>
 
+      # if isLoggedIn:
+      <h3>Custom message on receipt</h3>
+      <textarea id="custommessage" name="custommessage" class="textarea is-info"></textarea>
+
+      <hr>
+
+      # end if
+
       <div class="has-text-centered">
         #when defined(recaptcha):
         #
@@ -303,10 +375,22 @@
         #
         #end when
 
-        <label class="checkbox" style="max-width: 300px;">
-          <input id="acceptBuy" type="checkbox" required>
-          <span class="redAst">*</span> ${basketLang("acceptConditions")}
-        </label>
+        <div>
+          <label class="checkbox" style="max-width: 300px;">
+            <input id="acceptBuy" type="checkbox" required checked>
+            <span class="redAst">*</span> ${basketLang("acceptConditions")}
+          </label>
+        </div>
+
+        # if getValue(db, sql("SELECT mailOrder FROM basket_settings;")) == "true":
+        <br>
+        <div>
+          <label class="checkbox" style="max-width: 300px;">
+            <input id="sendEmail" type="checkbox">
+            ${basketLang("sendRecieptEmail")}
+          </label>
+        </div>
+        # end if
 
         <br>
         <br>

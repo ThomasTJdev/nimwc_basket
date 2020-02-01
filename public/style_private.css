@@ -53,6 +53,7 @@ div#buyBought {
   margin-right: auto;
   max-width: 500px;
 }
+div#buyProduct,
 div#buyBuying {
   max-width: 350px;
   margin-left: auto;

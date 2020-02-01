@@ -36,6 +36,9 @@ export basketLangGen, basketLang, langTable
 
 import code/translation
 
+import code/basket_utils
+export getProductData
+
 when defined(postgres): import db_postgres
 else:                   import db_sqlite
 
@@ -183,6 +186,7 @@ proc basketStart*(db: DbConn) =
     vat         INTEGER,
     valuta      VARCHAR(10),
     productcount INTEGER,
+    multiple_product_count VARCHAR(100),
     receipt_nr  INTEGER,
     email       VARCHAR(300),
     phone       VARCHAR(300),
@@ -213,6 +217,10 @@ proc basketStart*(db: DbConn) =
 
 
   info("Basket plugin: Copying UI JS-file if not exists or newer version available")
-  if not fileExists(getAppDir().replace("nimwcpkg") / "public/js/basket_ui_" & basketV & ".js"):
+  when defined(dev):
     copyFile(getAppDir().replace("nimwcpkg") / "plugins/basket/public/basket_ui.js", getAppDir().replace("nimwcpkg") / "public/js/basket_ui_" & basketV & ".js")
     info("Basket plugin: New JS file copied to JS-folders")
+  else:
+    if not fileExists(getAppDir().replace("nimwcpkg") / "public/js/basket_ui_" & basketV & ".js"):
+      copyFile(getAppDir().replace("nimwcpkg") / "plugins/basket/public/basket_ui.js", getAppDir().replace("nimwcpkg") / "public/js/basket_ui_" & basketV & ".js")
+      info("Basket plugin: New JS file copied to JS-folders")
