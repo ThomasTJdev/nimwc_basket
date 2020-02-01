@@ -293,9 +293,15 @@ function doTheBuy() {
     grecaptcharesponse: recaptcha
   }
 
-  data = Object.entries(params)
-    .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-    .join('&');
+  // Arg, who is still using IE !!!
+  //data = Object.entries(params)
+  //  .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+  //  .join('&');
+  data = Object.entries(params).map(function (_ref) {
+    var key = _ref[0],
+      val = _ref[1];
+    return key + "=" + encodeURIComponent(val);
+  }).join('&');
 
   xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
