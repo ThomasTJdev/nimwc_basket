@@ -11,9 +11,20 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 
 
 ## Changelog
+### v0.6
+* Fix bug with parseInt(), when mixing single and multple product buy
+* Correct filename when user downloads receipt
+* Fix CSS bug with width
+* PDF receipt - use smaller font
+* Add company ID field (optional)
+```
+ALTER TABLE basket_purchase ADD COLUMN companyid VARCHAR(300);
+```
+
+
 ### v0.5
 * Create receipts for private products
-* Allow for buying multiple products
+* Allow for buying multiple products (`/basket/buynow/multiple?products=1,2`)
 
 ```sql
 ALTER TABLE basket_purchase ADD COLUMN multiple_product_count VARCHAR(100);
