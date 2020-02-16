@@ -24,6 +24,8 @@
     <hr>
 
     <h3>Click on a product to edit</h3>
+    <p>To buy multiple products use the ID: /basket/buynow/multiple?products=1,2</p>
+    <br>
     <div>
       <table id="products" class="table is-bordered is-hoverable" >
         <thead>
@@ -36,6 +38,7 @@
             <th>Valuta</th>
             <th>Picture</th>
             <th>Active</th>
+            <th>ID</th>
           </tr>
         </thead>
         <tbody>
@@ -61,6 +64,7 @@
                   Active
                 # end if
               </td>
+              <td>${product[0]}</td>
             </tr>
           #end for
         </tbody>
