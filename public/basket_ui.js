@@ -341,6 +341,7 @@ function doTheBuy() {
     zip: parZip,
     country: parCountry,
     company: document.getElementById("buyCompany").value,
+    companyid: document.getElementById("buyCompanyId").value,
     shipping: parShipping,
     shippingDetails: parShippingDetails,
     sendmail: sendMail,
