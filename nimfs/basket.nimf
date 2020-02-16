@@ -190,6 +190,13 @@
         </div>
       </div>
 
+      <label>${basketLang("companyIdOptional")}</label>
+      <div class="field">
+        <div class="control">
+          <input id="buyCompanyId" type="text" name="companyid" class="input is-info" onkeyup="updateCompany(this);">
+        </div>
+      </div>
+
       <br>
       <div class="has-text-centered">
         <button type="button" class="button is-warning" onclick="backToProduct()" style="margin-right: 15px; width: 100px;">${basketLang("back")}</button>
@@ -535,11 +542,10 @@
               #end case
               <td>${receipt[7]}</td>
               <td>
-                <form id="getpdf" action="/basket/pdfreceipt/download" method="post" target="_blank">
+                <form id="getpdf" action="/basket/pdfreceipt/download/${filename}" method="post" target="_blank">
                   <input name="id" value="${receipt[0]}" style="display: none;">
                   <input name="email" value="${email}" style="display: none;">
                   <input name="password" value="${password}" style="display: none;">
-                  <input name="filename" value="${filename}" style="display: none;">
                   <button type="submit" class="button is-info is-small">${basketLang("receipt")}</button>
                 </form>
               </td>
