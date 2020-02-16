@@ -194,6 +194,7 @@ proc basketStart*(db: DbConn) =
     password    VARCHAR(300),
     name        VARCHAR(300),
     company     VARCHAR(300),
+    companyid   VARCHAR(300),
     address     VARCHAR(500),
     city        VARCHAR(500),
     zip         VARCHAR(100),
