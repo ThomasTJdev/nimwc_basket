@@ -292,7 +292,7 @@
       salt = makeSalt()
       password = makePassword(passwordRaw, salt)
       receipt_nr_next = getValue(db, sql("SELECT receipt_nr_next FROM basket_settings"))
-      
+
     var shippingData: Row
     if @"shipping" != "":
       shippingData = getRow(db, sql("SELECT price, vat FROM basket_shipping WHERE id = ?"), @"shipping")
@@ -305,6 +305,7 @@
       totalPriceWithShipping: int
       count: int
       exist: bool
+      multiProductVat: string
 
     let
       active = if c.loggedIn == true: "" else: " AND active = '1'"
@@ -319,6 +320,7 @@
         totalPrice += parseInt(productData[0]) * parseInt(productCount[count])
         totalVat   += parseInt(productData[1]) * parseInt(productCount[count])
         count      += 1
+        multiProductVat = productData[2]
 
       if not exist:
         redirect("/")
@@ -334,7 +336,7 @@
         redirect("/")
 
       let productPrice = (parseInt(productData[0]) + parseInt(productData[1])) * parseInt(@"productcount")
-      
+
       if shippingData.len() > 0:
         let shippingPrice = parseInt(shippingData[0]) + parseInt(shippingData[1])
         totalPriceWithShipping = productPrice + shippingPrice
@@ -350,11 +352,11 @@
     # Single product, otherwise "multiple_product_id"
     var id: int64
     if @"multi" == "true":
-      id = insertID(db, sql("INSERT INTO basket_purchase (multiple_product_id, price, vat, valuta, multiple_product_count, email, salt, password, name, company, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", $totalPrice, $totalVat, "", @"productcount", email, salt, password, @"name", @"company", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
-      
+      id = insertID(db, sql("INSERT INTO basket_purchase (multiple_product_id, price, vat, valuta, multiple_product_count, email, salt, password, name, company, companyid, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", $totalPrice, $totalVat, multiProductVat, @"productcount", email, salt, password, @"name", @"company", @"companyid", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
+
     else:
-      id = insertID(db, sql("INSERT INTO basket_purchase (product_id, price, vat, valuta, productcount, email, salt, password, name, company, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", productData[0], productData[1], productData[2], @"productcount", email, salt, password, @"name", @"company", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
-    
+      id = insertID(db, sql("INSERT INTO basket_purchase (product_id, price, vat, valuta, productcount, email, salt, password, name, company, companyid, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", productData[0], productData[1], productData[2], @"productcount", email, salt, password, @"name", @"company", @"companyid", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
+
     if id == -1 or id == 0:
       resp("Der skete en fejl.")
 
@@ -369,7 +371,7 @@
 
     let payment = getValue(db, sql("SELECT paymentMethod FROM basket_settings;")).replace("\n", "<br>")
 
-    
+
     if @"sendmail" == "true" and getValue(db, sql("SELECT mailOrder FROM basket_settings;")) == "true":
       let
         appDir       = getAppDir().replace("nimwcpkg", "")
@@ -432,7 +434,7 @@
     resp genMain(c, genBuyShowPdf(db, email, password, receipts))
 
   # Download PDF receipt
-  post "/basket/pdfreceipt/download":
+  post "/basket/pdfreceipt/download/@filename":
     createTFD()
 
     let email = @"email".toLowerAscii()
