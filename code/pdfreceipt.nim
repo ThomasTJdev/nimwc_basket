@@ -22,8 +22,10 @@ template fontStdBold() =
   doc.setFont("Roboto", {FS_BOLD}, 4, ENC_UTF8)
 
 template fontStd() =
-  doc.setFont("Roboto", {FS_REGULAR}, 4, ENC_UTF8)
+  doc.setFont("Roboto", {FS_REGULAR}, 3.5, ENC_UTF8)
 
+template fontSmall() =
+  doc.setFont("Roboto", {FS_REGULAR}, 3.5, ENC_UTF8)
 
 proc draw_rect(doc: PDF, x, y, w, h: float64, label:string) =
   doc.drawRect(x, y - 1, w, h)
@@ -77,7 +79,7 @@ proc cellDrawRectText(doc: PDF, x, y, w, h: float64, textRaw: string, isCell=tru
   ## If you are inserting normal text, set isCell=false and
   ## subtract 2int from the x, since a cell is inserting a space on 2.
 
-  const lineHeight = 6.0
+  const lineHeight = 5.0
   let runeTextInChars = repeat("A", toRunes(textRaw).len)
   let runeTextInCharsLen = runeTextInChars.len
   let textReplaceRunes = multiReplace(textRaw, [("æ", "a"), ("ø", "o"), ("å", "a"), ("Æ", "A"), ("Ø", "O"), ("Å", "A")])
@@ -165,7 +167,7 @@ proc cellDrawRectText(doc: PDF, x, y, w, h: float64, textRaw: string, isCell=tru
 
 
 proc pageCheckText(doc: PDF, size: PageSize, pageHeight, pageWidth, y: float64, text: string): bool =
-  const lineHeight = 6.0
+  const lineHeight = 5.0
   const prefH = 10.0
 
   let widthNeed = doc.getTextWidth(text)  # e.g. 343
@@ -174,7 +176,7 @@ proc pageCheckText(doc: PDF, size: PageSize, pageHeight, pageWidth, y: float64, 
   if ((lineHeight * lines) + (prefH - lineHeight) + y) > pageHeight-25:
     doc.addPage(size, PGO_PORTRAIT)
     doc.setFillColor(initRGB("black"))
-    doc.setFont("Roboto", {FS_REGULAR}, 4, ENC_UTF8)
+    doc.setFont("Roboto", {FS_REGULAR}, 3.5, ENC_UTF8)
     return true
 
 
@@ -182,7 +184,7 @@ proc pageCheckHeight(doc: PDF, size: PageSize, pageHeight, y, h: float64): bool 
   if pageHeight-25 < (y + h):
     doc.addPage(size, PGO_PORTRAIT)
     doc.setFillColor(initRGB("black"))
-    doc.setFont("Roboto", {FS_REGULAR}, 4, ENC_UTF8)
+    doc.setFont("Roboto", {FS_REGULAR}, 3.5, ENC_UTF8)
     return true
 
 
@@ -190,7 +192,7 @@ proc rowHeightCalc(doc: PDF, prefH, widthAvai: float64, text: string): float64 =
   ## Calculate the height of the text based on the available width.
   ## If text does not need new line, return preferred height, otherwise
   ## calculate the height.
-  const lineHeight = 6.0
+  const lineHeight = 5.0
 
   # Check if theres any newlines in text "\n"
   if countLines(text) > 1:
@@ -230,7 +232,7 @@ proc drawRow(doc: PDF, productName, buyNumber, buyPrice, buyPricetotal, buyVatTo
   var rowIndent = x
   # R1 - init
   doc.setFillColor(initRGB("black"))
-  doc.setFont("Roboto", {FS_REGULAR}, 4, ENC_UTF8)
+  doc.setFont("Roboto", {FS_REGULAR}, 3.5, ENC_UTF8)
 
   # R1 - Row height
   # Text align left
@@ -282,7 +284,7 @@ proc drawRow(doc: PDF, productName, buyNumber, buyPrice, buyPricetotal, buyVatTo
 proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
   ## PDF content
 
-  let buyInfo  = getRow(db, sql("SELECT price, vat, productcount, email, name, receipt_nr, payment_received, company, address, city, creation, valuta, shipping, product_id, zip, country, phone, multiple_product_id, multiple_product_count FROM basket_purchase WHERE id = ? AND email = ?"), id, email)
+  let buyInfo  = getRow(db, sql("SELECT price, vat, productcount, email, name, receipt_nr, payment_received, company, address, city, creation, valuta, shipping, product_id, zip, country, phone, multiple_product_id, multiple_product_count, companyid FROM basket_purchase WHERE id = ? AND email = ?"), id, email)
   #[
     0) price,
     1) vat,
@@ -344,6 +346,7 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
     cusEmail     = buyInfo[3]
     cusName      = buyInfo[4]
     cusCompany   = buyInfo[7]
+    cusCompanyId = buyInfo[19]
     cusAddress   = buyInfo[8]
     cusCity      = buyInfo[9]
     cusZip       = buyInfo[14]
@@ -391,9 +394,11 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
 
 
   # Customer info
-  var customerInfo = cusAddress & "\n" & cusZip & " " & cusCity & "\n" & cusCountry & "\n\n" & cusName & "\n" & cusEmail
+  var customerInfo = cusAddress & "\n" & cusZip & " " & cusCity & "\n" & cusCountry & "\n\nAtt.: " & cusName & "\n" & cusEmail
   if cusPhone != "":
     customerInfo = customerInfo & "\n" & cusPhone
+  if cusCompanyId != "":
+    customerInfo = cusCompanyId & "\n" & customerInfo
   if cusCompany != "":
     customerInfo = cusCompany & "\n" & customerInfo
 
@@ -420,7 +425,7 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
   totalPrice = productTotalPrice + shipPrice
   totalVat   = productTotalVat + shipVat
   total      = totalPrice + totalVat
- 
+
 
 
   # Setup PDF
@@ -461,7 +466,7 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
 
 
   # Company description and Customer address
-  let columnWidth = pageWidth / 3
+  let columnWidth = pageWidth / 2.5
   let companyDesrHeight = rowHeightCalc(doc, 10, columnWidth, companyDesr)
   let customerInfoHeight = rowHeightCalc(doc, 10, columnWidth, customerInfo)
   let addressHeight = if companyDesrHeight > customerInfoHeight: companyDesrHeight else: customerInfoHeight
@@ -477,10 +482,10 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
 
   # Subtrack 3 from y, due to levelling with sender
   fontStdBold()
-  doc.drawText(columnWidth * 2, y - 3.0, basketLang("receiver") & ":")
+  doc.drawText(columnWidth + (columnWidth / 2), y - 3.0, basketLang("receiver") & ":")
 
   fontStd()
-  doc.cellDrawRectText(columnWidth * 2, y, columnWidth, addressHeight, customerInfo);
+  doc.cellDrawRectText(columnWidth + (columnWidth / 2), y, columnWidth, addressHeight, customerInfo);
   doc.stroke()
 
   y += addressHeight + 15.0
@@ -494,8 +499,9 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
     doc.drawText(15, y, basketLang("buyOf") & ":")
   y += 10.0
 
+  fontSmall()
+
   # Date
-  fontStd()
   doc.drawText(15, y, basketLang("dateForOrder") & ": " & epochDate(buyDate, "YYYY-MM-DD HH:mm"))
   y += 5.0
 
@@ -511,6 +517,7 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
     doc.cellDrawRectText(15, y, (pageWidth - 5), productDesrHeight, cusmsg, isCell=false)
     y += 3.0 + productDesrHeight
 
+  fontStd()
 
   # Purchase details
   let rowHeadingHeight = 10.0
