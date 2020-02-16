@@ -78,6 +78,9 @@ country_DK = Land
 companyOptional_EN = Company (optional)
 companyOptional_DK = Firma (frivillig)
 
+companyIdOptional_EN = Company ID (optional)
+companyIdOptional_DK = Firma CVR (frivillig)
+
 company_EN = Company
 company_DK = Firma
 
