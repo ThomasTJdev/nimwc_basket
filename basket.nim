@@ -65,6 +65,11 @@ let
   smtpUser = dict.getSectionValue("SMTP", "SMTPUser")
   smtpPassword = dict.getSectionValue("SMTP", "SMTPPassword")
 
+proc parseIntSafe(str: string): int =
+  try:
+    return parseInt(str)
+  except:
+    return 0
 
 include "nimfs/settings.nimf"
 include "nimfs/accounting.nimf"
@@ -164,6 +169,8 @@ proc basketStart*(db: DbConn) =
     price        INTEGER,
     vat          INTEGER,
     valuta       VARCHAR(10),
+    maxItems     INTEGER,
+    minItems     INTEGER,
     modified timestamp not null default (STRFTIME('%s', 'now')),
     creation timestamp not null default (STRFTIME('%s', 'now'))
   );""", []):
@@ -181,12 +188,6 @@ proc basketStart*(db: DbConn) =
   create table if not exists basket_purchase (
     id INTEGER primary key,
     product_id  INTEGER,
-    multiple_product_id VARCHAR(100),
-    price       INTEGER,
-    vat         INTEGER,
-    valuta      VARCHAR(10),
-    productcount INTEGER,
-    multiple_product_count VARCHAR(100),
     receipt_nr  INTEGER,
     email       VARCHAR(300),
     phone       VARCHAR(300),
@@ -201,10 +202,28 @@ proc basketStart*(db: DbConn) =
     country     VARCHAR(100),
     shipping    INTEGER,
     shippingDetails VARCHAR(1000),
+    shippingPrice VARCHAR(100),
+    shippingVat VARCHAR(100),
     payment_received VARCHAR(100),
     shipped     VARCHAR(100),
     modified timestamp not null default (STRFTIME('%s', 'now')),
     creation timestamp not null default (STRFTIME('%s', 'now'))
+  );""", []):
+    error("Basket plugin: Could not create table")
+
+  if not db.tryExec(sql"""
+  create table if not exists basket_purchase_products (
+    id INTEGER primary key,
+    purchase_id INTEGER,
+    product_id  INTEGER,
+    price       INTEGER,
+    vat         INTEGER,
+    valuta      VARCHAR(10),
+    productcount INTEGER,
+    modified timestamp not null default (STRFTIME('%s', 'now')),
+    creation timestamp not null default (STRFTIME('%s', 'now')),
+
+    foreign key (purchase_id) references basket_purchase(id)
   );""", []):
     error("Basket plugin: Could not create table")
 
