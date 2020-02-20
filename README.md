@@ -13,6 +13,7 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 ## Changelog
 ### v0.7
 * Allow spaces in phone number
+* When changing settings in account return to accounting after changes
 * Implement a sub table for products, so the purchase references the bought products for better history.
 ```sql
 ALTER TABLE basket_purchase ADD COLUMN shippingPrice VARCHAR(100);
