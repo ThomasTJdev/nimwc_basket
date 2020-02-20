@@ -5,15 +5,21 @@
 #proc genBasketLinks(): string =
 # result = ""
 <div class="has-text-centered" style="max-width: 350px; margin-left: auto; margin-right: auto;">
+  <h5>Product overview</h5>
   <a href="/basket/products" class="button is-link" style="width: 100%; margin-bottom: 10px;">Products</a>
   <br>
+  <h5>Edit products and shipping</h5>
   <a href="/basket/products/edit" class="button is-link" style="width: 100%; margin-bottom: 10px;">Product settings</a>
   <a href="/basket/shipping/edit" class="button is-link" style="width: 100%; margin-bottom: 10px;">Shipping settings</a>
+  <br>
+  <h5>Manage all the receipts</h5>
   <a href="/basket/allreceipts" class="button is-link" style="width: 100%; margin-bottom: 10px;">Accounting with receipts</a>
   <br>
+  <h5>You company data</h5>
   <a href="/basket/company/edit" class="button is-link" style="width: 100%; margin-bottom: 10px;">Edit company data</a>
   <a href="/basket/translations/edit" class="button is-link" style="width: 100%; margin-bottom: 10px;">Edit translations</a>
   <br>
+  <h5>Receipts</h5>
   <a href="/basket/pdfreceipt/login" class="button is-link" style="width: 100%; margin-bottom: 10px;">Login to receipts</a>
   <a href="/basket/allreceiptspdf" class="button is-link" style="width: 100%; margin-bottom: 10px;">All receipts</a>
 </div>
@@ -22,19 +28,19 @@
 #proc genBasketStats(db: DbConn): string =
 # result = ""
 #
-# let buyNotchecked = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "notchecked")
+# let buyNotchecked = getAllRows(db, sql("SELECT id FROM basket_purchase WHERE payment_received = ?;"), "notchecked")
 #
-# let buyAwaiting = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "awaiting")
+# let buyAwaiting = getAllRows(db, sql("SELECT id FROM basket_purchase WHERE payment_received = ?;"), "awaiting")
 #
-# let buyPayed = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? AND shipped IS NOT ? ORDER BY creation;"), "payed", "true")
+# let buyPayed = getAllRows(db, sql("SELECT id FROM basket_purchase WHERE payment_received = ? AND shipped IS NOT ?;"), "payed", "true")
 #
-# let buyShipped = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? AND shipped = ? ORDER BY creation;"), "payed", "true")
+# let buyShipped = getAllRows(db, sql("SELECT id FROM basket_purchase WHERE payment_received = ? AND shipped = ?;"), "payed", "true")
 #
-# let buyCanceled = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "canceled")
+# let buyCanceled = getAllRows(db, sql("SELECT id FROM basket_purchase WHERE payment_received = ?;"), "canceled")
 #
-# let cashPayed = getAllRows(db, sql("SELECT price, vat, productcount, valuta, multiple_product_count FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "payed")
+# let cashPayed = getRow(db, sql("SELECT SUM(bpp.price), SUM(bpp.vat) FROM basket_purchase_products AS bpp LEFT JOIN basket_purchase AS bp ON bp.id = bpp.purchase_id WHERE bp.payment_received = ?;"), "payed")
 #
-# let cashAwaiting = getAllRows(db, sql("SELECT price, vat, productcount, valuta, multiple_product_count FROM basket_purchase WHERE payment_received IS NOT ? ORDER BY creation;"), "payed")
+# let cashAwaiting = getRow(db, sql("SELECT SUM(bpp.price), SUM(bpp.vat) FROM basket_purchase_products AS bpp LEFT JOIN basket_purchase AS bp ON bp.id = bpp.purchase_id WHERE bp.payment_received IS NOT ?;"), "payed")
 #
 <div>
     <h3>Stats</h3>
@@ -78,79 +84,29 @@
         <tr>
           <td style="width: 200px;">Payed (w. VAT)</td>
           <td>
-            # var cashPayedRes: int
-            # for item in cashPayed:
-            #   if item[1] != "":
-            #     if item[4] != "":
-            #       # Multiple products saves the total prices
-            #       cashPayedRes += (parseInt(item[0]) + parseInt(item[1]))
-            #     else:
-            #       cashPayedRes += (parseInt(item[0]) + parseInt(item[1])) * parseInt(item[2])
-            #     end if
-            #   else:
-            #     if item[4] != "":
-            #       # Multiple products saves the total prices
-            #       cashPayedRes += (parseInt(item[0]))
-            #     else:
-            #       cashPayedRes += parseInt(item[0]) * parseInt(item[2])
-            #     end if
-            #   end if
-            # end for
-            ${cashPayedRes}
+            # if cashPayed[0] != "" and cashPayed[1] != "":
+              ${parseIntSafe(cashPayed[0]) + parseIntSafe(cashPayed[1])}
+            # end if
           </td>
         </tr>
         <tr>
           <td>Payed VAT</td>
           <td>
-            # var cashPayedRes2: int
-            # for item in cashPayed:
-            #   if item[4] != "":
-            #     # Multiple products saves the total vat
-            #     cashPayedRes2 += parseInt(item[1])
-            #   else:
-            #     cashPayedRes2 += parseInt(item[1]) * parseInt(item[2])
-            #   end if
-            # end for
-            ${cashPayedRes2}
+            ${cashPayed[1]}
           </td>
         </tr>
         <tr>
           <td>Awaiting payments (w. VAT)</td>
           <td>
-            # var cashAwaitingRes: int
-            # for item in cashAwaiting:
-            #   if item[1] != "":
-            #     if item[4] != "":
-            #       # Multiple products saves the total prices
-            #       cashAwaitingRes += (parseInt(item[0]) + parseInt(item[1]))
-            #     else:
-            #       cashAwaitingRes += (parseInt(item[0]) + parseInt(item[1])) * parseInt(item[2])
-            #     end if
-            #   else:
-            #     if item[4] != "":
-            #       # Multiple products saves the total prices
-            #       cashAwaitingRes += parseInt(item[0])
-            #     else:
-            #       cashAwaitingRes += parseInt(item[0]) * parseInt(item[2])
-            #     end if
-            #   end if
-            # end for
-            ${cashAwaitingRes}
+            # if cashAwaiting[0] != "" and cashAwaiting[1] != "":
+              ${parseIntSafe(cashAwaiting[0]) + parseIntSafe(cashAwaiting[1])}
+            # end if
           </td>
         </tr>
         <tr>
           <td>Awaiting VAT</td>
           <td>
-            # var cashAwaitingRes2: int
-            # for item in cashAwaiting:
-            #   if item[4] != "":
-            #     # Multiple products saves the total prices
-            #     cashAwaitingRes2 += parseInt(item[1])
-            #   else:
-            #     cashAwaitingRes2 += parseInt(item[1]) * parseInt(item[2])
-            #   end if
-            # end for
-            ${cashAwaitingRes2}
+            ${cashAwaiting[1]}
           </td>
         </tr>
 

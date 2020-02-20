@@ -11,13 +11,26 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 
 
 ## Changelog
+### v0.7
+* Allow spaces in phone number
+* Implement a sub table for products, so the purchase references the bought products for better history.
+```sql
+ALTER TABLE basket_purchase ADD COLUMN shippingPrice VARCHAR(100);
+ALTER TABLE basket_purchase ADD COLUMN shippingVat VARCHAR(100);
+```
+* Set a min and max items on shipping products.
+```sql
+ALTER TABLE basket_shipping ADD COLUMN maxItems INTEGER;
+ALTER TABLE basket_shipping ADD COLUMN minItems INTEGER;
+```
+
 ### v0.6
 * Fix bug with parseInt(), when mixing single and multple product buy
 * Correct filename when user downloads receipt
 * Fix CSS bug with width
 * PDF receipt - use smaller font
 * Add company ID field (optional)
-```
+```sql
 ALTER TABLE basket_purchase ADD COLUMN companyid VARCHAR(300);
 ```
 

@@ -140,6 +140,8 @@ if ($shippingEditRow.length > 0) {
       document.getElementById("shippingEditPrice").value = childs[2].innerText;
       document.getElementById("shippingEditVat").value = childs[3].innerText;
       document.getElementById("shippingEditValuta").value = childs[4].innerText;
+      document.getElementById("shippingEditMinitems").value = childs[5].innerText;
+      document.getElementById("shippingEditMaxitems").value = childs[6].innerText;
 
       document.getElementById("formShipping").action = "/basket/shipping/edit";
 

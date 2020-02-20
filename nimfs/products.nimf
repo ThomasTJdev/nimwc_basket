@@ -6,7 +6,7 @@
 #proc genBasketProductEdit*(db: DbConn): string =
 # result = ""
 #
-# let allProducts = getAllRows(db, sql("SELECT id, identifier, productName, productDescription, price, vat, valuta, picture, active FROM basket_products;"))
+# let allProducts = getAllRows(db, sql("SELECT id, identifier, productName, productDescription, price, vat, valuta, picture, active FROM basket_products ORDER BY active, productName;"))
 #
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_private.js" defer></script>
@@ -16,6 +16,7 @@
   <div id="products">
 
     <h1>Products</h1>
+    <p>Do not mix valutas!!</p>
 
     <hr>
 
@@ -43,7 +44,15 @@
         </thead>
         <tbody>
           #for product in allProducts:
-            <tr class="productEdit" id="${product[0]}">
+          # var activeStatus: string
+          # if product[8] == "0":
+          #   activeStatus = "Inactive"
+          # elif product[8] == "2":
+          #   activeStatus = "Deleted"
+          # else:
+          #   activeStatus = "Active"
+          # end if
+            <tr class="productEdit activeStatus" id="${product[0]}">
               <td>${product[1]}</td>
               <td>${product[2]}</td>
               <td>${product[3]}</td>
@@ -58,11 +67,7 @@
                 # end if
               </td>
               <td>
-                # if product[8] == "0":
-                  Not active
-                # else:
-                  Active
-                # end if
+                ${activeStatus}
               </td>
               <td>${product[0]}</td>
             </tr>
@@ -151,6 +156,7 @@
         <select id="productEditActive" name="active">
           <option value="1">Active</option>
           <option value="0">Not active</option>
+          <option value="2">Deleted</option>
         </select>
       </div>
 
@@ -180,6 +186,7 @@
     <div class="modal-card-foot">
       <button id="product-close" class="button">Close</button>
       <button type="button" class="button is-success" onclick="document.getElementById('formProduct').submit()">Save</button>
+      <button type="button" class="button is-danger" onclick="delete();" style="margin-left: auto;">Delete</button>
     </div>
   </div>
 </div>

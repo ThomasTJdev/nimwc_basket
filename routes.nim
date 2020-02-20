@@ -104,7 +104,7 @@
 
     redirect("/basket/products/edit")
 
-  # Edit price settings
+  # Edit product settings
   post "/basket/products/edit":
     createTFD()
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
@@ -116,6 +116,16 @@
     exec(db, sql("UPDATE basket_products SET identifier = ?, productName = ?, productDescription = ?, price = ?, vat = ?, valuta = ?, active = ? WHERE id = ?;"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active", @"id")
 
     redirect("/basket/products/edit")
+
+  # Delete product
+  get "/basket/products/delete/@productID":
+    createTFD()
+    if not c.loggedIn or c.rank notin [Admin, Moderator]:
+      redirect("/")
+
+    exec(db, sql("DELETE FROM basket_products WHERE id = ?"), @"productID")
+
+    resp genMain(c, genBasketProductEdit(db))
 
 
 
@@ -142,19 +152,29 @@
     if not isDigit(@"vat") and @"vat" != "":
       resp("VAT needs to be a number")
 
-    let id = tryInsertId(db, sql("INSERT INTO basket_shipping (name, description, price, vat, valuta) VALUES (?, ?, ?, ?, ?)"), @"name", @"description", @"price", @"vat", @"valuta")
+    let id = tryInsertId(db, sql("INSERT INTO basket_shipping (name, description, price, vat, valuta, maxItems, minItems) VALUES (?, ?, ?, ?, ?, ?, ?)"), @"name", @"description", @"price", @"vat", @"valuta", @"maxitems", @"minitems")
 
     redirect("/basket/shipping/edit")
 
-  # Edit price settings
+  # Edit shipping settings
   post "/basket/shipping/edit":
     createTFD()
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
       redirect("/")
 
-    exec(db, sql("UPDATE basket_shipping SET name = ?, description = ?, price = ?, vat = ?, valuta = ? WHERE id = ?;"), @"name", @"description", @"price", @"vat", @"valuta", @"id")
+    exec(db, sql("UPDATE basket_shipping SET name = ?, description = ?, price = ?, vat = ?, valuta = ?, maxItems = ?, minItems = ? WHERE id = ?;"), @"name", @"description", @"price", @"vat", @"valuta", @"maxitems", @"minitems", @"id")
 
     redirect("/basket/shipping/edit")
+
+  # Delete shipping
+  get "/basket/shipping/delete/@shippingID":
+    createTFD()
+    if not c.loggedIn or c.rank notin [Admin, Moderator]:
+      redirect("/")
+
+    exec(db, sql("DELETE FROM basket_shipping WHERE id = ?"), @"shippingID")
+
+    resp genMain(c, genBasketShippingEdit(db))
 
 
 
@@ -226,7 +246,7 @@
     else:
       exec(db, sql("UPDATE basket_purchase SET payment_received = ?, modified = ? WHERE id = ?"), @"action", toInt(epochTime()), @"receipt_id")
 
-    redirect("/basket/settings")
+    redirect("/basket/allreceipts")
 
 
 
@@ -285,7 +305,7 @@
       resp("Fejl, du mangler at angive din by.")
 
     if @"productcount" == "": # or parseInt(@"productcount") > 10:
-      resp("Ønsker du at bestille mere end 10 bøger, skal du skrive en mail for rabat.")
+      resp("Fejl, du skal angive antallet af produkter")
 
     let
       # Password
@@ -296,52 +316,9 @@
     var shippingData: Row
     if @"shipping" != "":
       shippingData = getRow(db, sql("SELECT price, vat FROM basket_shipping WHERE id = ?"), @"shipping")
+      if shippingData.len() == 0:
+        resp("Erro, shipping method does not exists")
 
-    # Receipt info
-    var
-      productData: Row
-      totalPrice: int
-      totalVat: int
-      totalPriceWithShipping: int
-      count: int
-      exist: bool
-      multiProductVat: string
-
-    let
-      active = if c.loggedIn == true: "" else: " AND active = '1'"
-      productCount = split(@"productcount", ",")
-
-    if @"multi" == "true":
-      for productId in split(@"id", ","):
-        productData = getRow(db, sql("SELECT price, vat, valuta, productName FROM basket_products WHERE id = ?" & active), productId)
-        if productData.len() > 0:
-          exist = true
-
-        totalPrice += parseInt(productData[0]) * parseInt(productCount[count])
-        totalVat   += parseInt(productData[1]) * parseInt(productCount[count])
-        count      += 1
-        multiProductVat = productData[2]
-
-      if not exist:
-        redirect("/")
-
-      if shippingData.len() > 0:
-        totalPriceWithShipping = totalPrice + totalVat + parseInt(shippingData[0]) + parseInt(shippingData[1])
-      else:
-        totalPriceWithShipping = totalPrice + totalVat
-
-    else:
-      productData = getRow(db, sql("SELECT price, vat, valuta, productName FROM basket_products WHERE id = ?" & active), @"id")
-      if productData.len() == 0:
-        redirect("/")
-
-      let productPrice = (parseInt(productData[0]) + parseInt(productData[1])) * parseInt(@"productcount")
-
-      if shippingData.len() > 0:
-        let shippingPrice = parseInt(shippingData[0]) + parseInt(shippingData[1])
-        totalPriceWithShipping = productPrice + shippingPrice
-      else:
-        totalPriceWithShipping = productPrice
 
     # Update next receipt number, and use current receipt number
     let receipt_nr = if receipt_nr_next == "": "1" else: receipt_nr_next
@@ -349,27 +326,69 @@
     exec(db, sql("UPDATE basket_settings SET receipt_nr_next = ?"), receipt_nr_next_inc)
 
     # Create purchase data
-    # Single product, otherwise "multiple_product_id"
-    var id: int64
-    if @"multi" == "true":
-      id = insertID(db, sql("INSERT INTO basket_purchase (multiple_product_id, price, vat, valuta, multiple_product_count, email, salt, password, name, company, companyid, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", $totalPrice, $totalVat, multiProductVat, @"productcount", email, salt, password, @"name", @"company", @"companyid", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
+    let purchaseID = insertID(db, sql("INSERT INTO basket_purchase (email, salt, password, name, company, companyid, address, phone, city, zip, country, shipping, shippingDetails, shippingPrice, shippingVat, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), email, salt, password, @"name", @"company", @"companyid", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", shippingData[0], shippingData[1], "notchecked", $receipt_nr)
 
-    else:
-      id = insertID(db, sql("INSERT INTO basket_purchase (product_id, price, vat, valuta, productcount, email, salt, password, name, company, companyid, address, phone, city, zip, country, shipping, shippingDetails, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"id", productData[0], productData[1], productData[2], @"productcount", email, salt, password, @"name", @"company", @"companyid", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", "notchecked", $receipt_nr)
-
-    if id == -1 or id == 0:
+    if purchaseID == -1 or purchaseID == 0:
       resp("Der skete en fejl.")
 
-    # CREATE PDF
-    let filename = $id & "_" & email.multiReplace([("@", "_"), (".", "_")]) & ".pdf"
+
+    # Create purchase items
+    var
+      exist: bool
+      count: int
+    let
+      active = if c.loggedIn == true: "" else: " AND active = '1'"  # If user is logged in, allow access to not active products
+      productCount = split(@"productcount", ",")
+
+    # Loop through each product
+    for productID in split(@"id", ","):
+      let productData = getRow(db, sql("SELECT price, vat, valuta, productName FROM basket_products WHERE id = ?" & active), productID)
+
+      if productData.len() == 0:
+        continue
+
+      exec(db, sql("INSERT INTO basket_purchase_products (purchase_id, product_id, price, vat, valuta, productcount) VALUES (?, ?, ?, ?, ?, ?)"), purchaseID, productID, productData[0], productData[1], productData[2], productCount[count])
+
+      exist = true
+      count      += 1
+
+    if not exist:
+      redirect("/")
+
+
+    # PDF receipt
+    let filename = $purchaseID & "_" & email.multiReplace([("@", "_"), (".", "_")]) & ".pdf"
     let filepath = storageEFS / "receipts" / filename
 
     let cusmsg = if c.loggedIn: @"cusmsg" else: ""
-    pdfBuyGenerator(db, $id, filepath, email, @"multi", cusmsg)
+    pdfBuyGenerator(db, $purchaseID, filepath, email, @"multi", cusmsg)
 
-    let receipts = getAllRows(db, sql("SELECT id, productcount, receipt_nr, creation, password, salt, payment_received, shipped FROM basket_purchase WHERE email = ?"), email)
+
+    # Receipt mail
+    let receipts = getAllRows(db, sql("SELECT id, email, receipt_nr, creation, password, salt, payment_received, shipped FROM basket_purchase WHERE email = ?"), email)
 
     let payment = getValue(db, sql("SELECT paymentMethod FROM basket_settings;")).replace("\n", "<br>")
+
+    var
+      receiptProductname: string
+      receiptValuta: string
+
+    let tempPriceTotal = getRow(db, sql("SELECT SUM(price), SUM(vat) FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
+    let receiptTotalprice = parseInt(tempPriceTotal[0]) + parseInt(tempPriceTotal[1]) + parseInt(shippingData[0]) + parseInt(shippingData[1])
+
+    if split(@"id", ",").len() == 1:
+      receiptProductname = ""#getValue(db, sql("SELECT productName FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
+      receiptValuta = getValue(db, sql("SELECT valuta FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
+
+    else:
+      receiptProductname = "Multiple products"
+      var tmpValuta: string
+      let allValuta = getAllRows(db, sql("SELECT valuta FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
+      for valuta in allValuta:
+        if tmpValuta != "" and tmpValuta != valuta[0]:
+          receiptValuta = ""
+          break
+        receiptValuta = valuta[0]
 
 
     if @"sendmail" == "true" and getValue(db, sql("SELECT mailOrder FROM basket_settings;")) == "true":
@@ -381,10 +400,10 @@
         mailMsg      = basketLang("mailMsgCongrats")
 
       asyncCheck sendBasketReceipt(email,
-                    mailSubject.format(title, productData[3]),
+                    mailSubject.format(title, receiptProductname),
                     mailMsg.format(@"name",
-                        productData[3],
-                        $totalPriceWithShipping & " " & productData[2],
+                        receiptProductname,
+                        $receiptTotalprice & " " & receiptValuta,
                         payment,
                         mainURL & "/basket/pdfreceipt/login",
                         supportEmail,
@@ -394,7 +413,7 @@
                     $receipt_nr)
 
     if getValue(db, sql("SELECT mailAdminBought FROM basket_settings;")) == "true":
-      let adminMessage = """There's a new buyer!<br><br>$1 has bought $2 for $3.""" % [@"name", productData[3], $totalPriceWithShipping & " " & productData[2]]
+      let adminMessage = """There's a new buyer!<br><br>$1 has bought $2 for $3.""" % [@"name", receiptProductname, $receiptTotalprice & " " & receiptValuta]
       asyncCheck sendAdminMailNow("New buyer", adminMessage)
 
     resp genBuyShowPdf(db, email, @"password", receipts)
@@ -417,7 +436,7 @@
     let email = @"email".toLowerAscii()
     let password = @"password".strip()
 
-    let receipts = getAllRows(db, sql("SELECT id, productcount, receipt_nr, creation, password, salt, payment_received, shipped FROM basket_purchase WHERE email = ?"), email)
+    let receipts = getAllRows(db, sql("SELECT id, email, receipt_nr, creation, password, salt, payment_received, shipped FROM basket_purchase WHERE email = ?"), email)
 
     if receipts.len() == 0:
       redirect("/basket/pdfreceipt/login")

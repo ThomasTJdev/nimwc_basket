@@ -37,6 +37,10 @@ var langStopQuantity = {
   EN: "Choose the quantity (number of goods).",
   DK: "Angiv venligst antallet af varer."
 }
+var langStopNoShipping = {
+  EN: "There's no shipping method for this number of items.",
+  DK: "Der er ingen forsendelsesmetode for det antal."
+}
 var langStopEmail = {
   EN: "Please write your email.",
   DK: "Skriv venligst din email."
@@ -114,6 +118,37 @@ function gotoBuying() {
     }
   }
 
+  var shipping = document.getElementsByClassName("shippingItem");
+  var shippingNumber = shipping.length;
+  var countShip = 0;
+  for (var i = 0, length = shipping.length; i < length; i++) {
+    var shipItemsMin = shipping[i].getAttribute("data-minitems");
+    var shipItemsMinInt = parseInt(shipItemsMin, 10);
+    var shipItemsMax = shipping[i].getAttribute("data-maxitems");
+    var shipItemsMaxInt = parseInt(shipItemsMax, 10);
+
+    var count = document.getElementsByClassName('productcount');
+    for (var d = 0, dlength = count.length; d < dlength; d++) {
+      var countItem = count[d].value;
+      var countItemInt = parseInt(countItem, 10);
+
+      if (shipItemsMaxInt < countItemInt) {
+        shipping[i].style.display = "none";
+        countShip += 1;
+      } else if (shipItemsMinInt > countItemInt) {
+        shipping[i].style.display = "none";
+        countShip += 1;
+      } else {
+        shipping[i].style.display = "block";
+        countShip -= 1;
+      }
+    }
+  }
+  if (shippingNumber <= countShip) {
+    infoModal(langGen("StopNoShipping"));
+    return false;
+  }
+
   document.getElementById("buyProduct").style.display = "none";
   document.getElementById("buyBuying").style.display = "block";
 }
@@ -183,6 +218,18 @@ function gotoAccept() {
     totalPriceVat += tmpRawVat * number;
   }
   var totalPriceAndShipping = totalPriceWithoutVat + totalPriceVat + parseInt(shippingPrice, 10) + parseInt(shippingVat, 10);
+
+  if (document.getElementsByClassName("checkNumber")[0]) {
+    var parNumber = "";
+    var count = document.getElementsByClassName('productcount');
+    for (var i = 0, length = count.length; i < length; i++) {
+      if (parNumber != "") {
+        parNumber += ","
+      }
+      parNumber += count[i].value;
+    }
+    document.getElementsByClassName("checkNumber")[0].innerHTML = parNumber;
+  }
 
   document.getElementById("checkPrice").innerHTML = totalPriceWithoutVat;
   document.getElementById("checkPriceVat").innerHTML = totalPriceVat;
@@ -260,6 +307,9 @@ function checkShippingdata() {
 
 // Do the buy
 function doTheBuy() {
+  var buttons = document.getElementById("dothebuybuttons");
+  buttons.style.display = "none";
+
   var xhr;
   var url = "/basket/buynow";
 
@@ -386,6 +436,8 @@ function buySuccess(xhr) {
 
   } else {
     infoModal(xhr.responseText);
+    var buttons = document.getElementById("dothebuybuttons");
+    buttons.style.display = "block";
   }
 }
 
@@ -492,7 +544,8 @@ function validatePhone(phone) {
   var phone1 = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/ // 10 digits
   var phone2 = /^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/ // +-sign + 10 digits
   var phone3 = /^\d{8}$/ // 8 digits
-  if (phone1.test(phone) || phone2.test(phone) || phone3.test(phone)) {
+  var phoneFinal = phone.replace(/\s/g, '');
+  if (phone1.test(phoneFinal) || phone2.test(phoneFinal) || phone3.test(phoneFinal)) {
     return true;
   } else {
     return false;

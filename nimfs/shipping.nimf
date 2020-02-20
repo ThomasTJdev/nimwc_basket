@@ -6,7 +6,7 @@
 #proc genBasketShippingEdit*(db: DbConn): string =
 # result = ""
 #
-# let allShipping = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta FROM basket_shipping;"))
+# let allShipping = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta, minItems, maxItems FROM basket_shipping;"))
 #
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_private.js" defer></script>
@@ -33,6 +33,8 @@
             <th>Price</th>
             <th>VAT</th>
             <th>Valuta</th>
+            <th>Min items</th>
+            <th>Max items</th>
           </tr>
         </thead>
         <tbody>
@@ -43,6 +45,16 @@
               <td>${shipping[3]}</td>
               <td>${shipping[4]}</td>
               <td>${shipping[5]}</td>
+              <td>
+                #if shipping[6] != "0":
+                  ${shipping[6]}
+                #end if
+              </td>
+              <td>
+                #if shipping[7] != "0":
+                  ${shipping[7]}
+                #end if
+              </td>
             </tr>
           #end for
         </tbody>
@@ -81,7 +93,7 @@
       <label>Shipping name</label>
       <div class="field">
         <div class="control">
-          <input type="text" id="shippingEditName" name="name" class="input is-info" value="">
+          <input type="text" id="shippingEditName" name="name" class="input is-info" value="" required>
         </div>
       </div>
 
@@ -95,21 +107,35 @@
       <label>Price (without VAT)</label>
       <div class="field">
         <div class="control">
-          <input type="number" id="shippingEditPrice" name="price" class="input is-info" value="">
+          <input type="number" id="shippingEditPrice" name="price" class="input is-info" value="" required>
         </div>
       </div>
 
       <label>VAT (in whole cost in the specified valuta, e.g. 200)</label>
       <div class="field">
         <div class="control">
-          <input type="number" id="shippingEditVat" name="vat" class="input is-info" value="">
+          <input type="number" id="shippingEditVat" name="vat" class="input is-info" value="" required>
         </div>
       </div>
 
       <label>Valuta (e.g. DKK, £, etc.)</label>
       <div class="field">
         <div class="control">
-          <input type="text"  id="shippingEditValuta" name="valuta" class="input is-info" value="">
+          <input type="text"  id="shippingEditValuta" name="valuta" class="input is-info" value="" required>
+        </div>
+      </div>
+
+      <label>Min items in basket (optional, set 0 for disabled)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="shippingEditMinitems" name="minitems" class="input is-info" value="" required >
+        </div>
+      </div>
+
+      <label>Max items in basket (optional, set 0 for disabled)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="shippingEditMaxitems" name="maxitems" class="input is-info" value="" required >
         </div>
       </div>
 
@@ -120,6 +146,7 @@
     <div class="modal-card-foot">
       <button id="shipping-close" class="button">Close</button>
       <button type="button" class="button is-success" onclick="document.getElementById('formShipping').submit()">Save</button>
+      <button type="button" class="button is-danger" onclick="delete();" style="margin-left: auto;">Delete</button>
     </div>
   </div>
 </div>

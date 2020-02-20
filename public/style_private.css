@@ -15,6 +15,12 @@ div#basket,
 div#buy.adminreceipt {
   max-width: 1200px;
 }
+div#basket #products .productEdit.Inactive {
+  background-color: rgba(238, 238, 18, 0.582);
+}
+div#basket #products .productEdit.Deleted {
+  background-color: grey;
+}
 div#buy h3 {
   text-align: center;
 }

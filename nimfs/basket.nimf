@@ -10,7 +10,7 @@
 # let productPrice = getProductPrice(db, identifier, singleProduct, isLoggedIn)
 #
 #
-# let shippingData = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta FROM basket_shipping;"))
+# let shippingData = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta, minItems, maxItems FROM basket_shipping;"))
 #
 # let basketCountries = getValue(db, sql("SELECT countries FROM basket_settings;"))
 #
@@ -18,15 +18,15 @@
 #
 ## var price: int
 ## if productData[2] == "":
-##   price = parseInt(productData[1])
+##   price = parseIntSafe(productData[1])
 ## else:
-##   price = parseInt(productData[1]) + parseInt(productData[2])
+##   price = parseIntSafe(productData[1]) + parseIntSafe(productData[2])
 ## end if
 
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_ui_${basketV}.js" defer></script>
 <input id="userLang" value="${lang}" style="display: none;">
-<input id="priceTotal" value="${parseInt(productPrice[0]) + parseInt(productPrice[1])}" style="display: none;">
+<input id="priceTotal" value="${parseIntSafe(productPrice[0]) + parseIntSafe(productPrice[1])}" style="display: none;">
 
 # if productData.len() == 1:
 #   for product in productData:
@@ -77,7 +77,7 @@
       <label>${basketLang("priceVat")} (${product[3]})</label>
       <div class="field">
         <div class="control">
-          <input id="${product[0]}-updatedPrice" type="text" disabled="disabled" class="input is-info updatedPrice" value="${parseInt(product[1]) + parseInt(product[2])}" >
+          <input id="${product[0]}-updatedPrice" type="text" disabled="disabled" class="input is-info updatedPrice" value="${parseIntSafe(product[1]) + parseIntSafe(product[2])}" >
         </div>
       </div>
 
@@ -215,7 +215,7 @@
       <div class="control">
         # let shippingCount = shippingData.len()
         # for shipping in shippingData:
-        <div class="box">
+        <div class="box shippingItem" data-minitems="${shipping[6]}" data-maxitems="${shipping[7]}">
           <label class="radio">
             <input class="shippingChoice" type="radio" name="shipping" value="${shipping[0]}" data-name="${shipping[1]}" data-price="${shipping[3]}" data-vat="${shipping[4]}">
             <b>${shipping[1]}</b>
@@ -280,8 +280,10 @@
               #   end for
               # else:
               <ul>
+              # var count: int
               # for product in productData:
-                <li>(<span id="${product[0]}-checkNumber">1</span>) ${product[4]}</li>
+              # count += 1
+                <li>(<span id="${product[0]}-checkNumber">${count}</span>) ${product[4]}</li>
               # end for
               </ul>
               # end if
@@ -291,7 +293,7 @@
           <tr>
             <td>${basketLang("quantity")}</td>
             # for product in productData:
-            <td id="${product[0]}-checkNumber"></td>
+            <td id="${product[0]}-checkNumber" class="checkNumber"></td>
             # end for
           </tr>
           # end if
@@ -393,7 +395,7 @@
         <br>
         <div>
           <label class="checkbox" style="max-width: 300px;">
-            <input id="sendEmail" type="checkbox">
+            <input id="sendEmail" type="checkbox" checked>
             ${basketLang("sendRecieptEmail")}
           </label>
         </div>
@@ -401,7 +403,7 @@
 
         <br>
         <br>
-        <div class="has-text-centered">
+        <div id="dothebuybuttons" class="has-text-centered">
           <button type="button" class="button is-warning" onclick="backToShipping()" style="margin-right: 15px;width: 100px;">${basketLang("back")}</button>
           <button type="button" class="button is-success" onclick="doTheBuy()" style="width: 100px;">${basketLang("buy")}</button>
         </div>

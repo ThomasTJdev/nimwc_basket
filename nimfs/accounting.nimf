@@ -6,34 +6,31 @@
 #proc genBuyAllReceipts*(db: DbConn): string =
 # result = ""
 #
-# let buyNotchecked = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "notchecked")
+# let buyNotchecked = getAllRows(db, sql("SELECT bp.id, bp.name, bp.email, bp.creation, bp.modified, bp.receipt_nr, bp.shipped, SUM(bpp.price), SUM(bpp.vat), bpp.valuta FROM basket_purchase AS bp LEFT JOIN basket_purchase_products AS bpp ON bpp.purchase_id = bp.id WHERE bp.payment_received = ? GROUP BY bpp.purchase_id ORDER BY bp.creation;"), "notchecked")
 #
-# let buyAwaiting = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "awaiting")
+# let buyAwaiting = getAllRows(db, sql("SELECT bp.id, bp.name, bp.email, bp.creation, bp.modified, bp.receipt_nr, bp.shipped, SUM(bpp.price), SUM(bpp.vat), bpp.valuta FROM basket_purchase AS bp LEFT JOIN basket_purchase_products AS bpp ON bpp.purchase_id = bp.id WHERE bp.payment_received = ? GROUP BY bpp.purchase_id ORDER BY bp.creation;"), "awaiting")
 #
-# let buyPayed = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? AND shipped IS NOT ? ORDER BY creation;"), "payed", "true")
+# let buyPayed = getAllRows(db, sql("SELECT bp.id, bp.name, bp.email, bp.creation, bp.modified, bp.receipt_nr, bp.shipped, SUM(bpp.price), SUM(bpp.vat), bpp.valuta FROM basket_purchase AS bp LEFT JOIN basket_purchase_products AS bpp ON bpp.purchase_id = bp.id WHERE bp.payment_received = ? AND bp.shipped IS NOT ? GROUP BY bpp.purchase_id ORDER BY bp.creation;"), "payed", "true")
 #
-# let buyShipped = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? AND shipped = ? ORDER BY creation;"), "payed", "true")
+# let buyShipped = getAllRows(db, sql("SELECT bp.id, bp.name, bp.email, bp.creation, bp.modified, bp.receipt_nr, bp.shipped, SUM(bpp.price), SUM(bpp.vat), bpp.valuta FROM basket_purchase AS bp LEFT JOIN basket_purchase_products AS bpp ON bpp.purchase_id = bp.id WHERE bp.payment_received = ? AND bp.shipped = ? GROUP BY bpp.purchase_id ORDER BY bp.creation;"), "payed", "true")
 #
-# let buyCanceled = getAllRows(db, sql("SELECT id, name, email, creation, modified, receipt_nr, shipped, price, vat, productcount, valuta FROM basket_purchase WHERE payment_received = ? ORDER BY creation;"), "canceled")
+# let buyCanceled = getAllRows(db, sql("SELECT bp.id, bp.name, bp.email, bp.creation, bp.modified, bp.receipt_nr, bp.shipped, SUM(bpp.price), SUM(bpp.vat), bpp.valuta FROM basket_purchase AS bp LEFT JOIN basket_purchase_products AS bpp ON bpp.purchase_id = bp.id WHERE bp.payment_received = ? GROUP BY bpp.purchase_id ORDER BY bp.creation;"), "canceled")
 #
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_private.js" defer></script>
 
 <div id="buy" class="adminreceipt">
 
-  ${genBasketLinks()}
+  <a href="/basket/settings" class="button is-link" style="width: 200px;margin-bottom: 10px;">Back</a>
 
   <hr>
 
-  ${genBasketStats(db)}
-
-  <hr>
 
   <div style="width: 300px; margin-left: auto; margin-right: auto; text-align: center;">
-    <a href="#awaiting" class="button is-info" style="width: 200px;margin-bottom: 10px;">Awaiting receipts</a>
-    <a href="#payed" class="button is-info" style="width: 200px;margin-bottom: 10px;">Payed receipts</a>
-    <a href="#payedshipped" class="button is-info" style="width: 200px;margin-bottom: 10px;">Payed and shipped receipts</a>
-    <a href="#canceled" class="button is-info" style="width: 200px;">Canceled receipts</a>
+    <a href="#awaiting" class="button is-link" style="width: 220px;margin-bottom: 10px;">Awaiting receipts</a>
+    <a href="#payed" class="button is-link" style="width: 220px;margin-bottom: 10px;">Payed receipts</a>
+    <a href="#payedshipped" class="button is-link" style="width: 220px;margin-bottom: 10px;">Payed and shipped receipts</a>
+    <a href="#canceled" class="button is-link" style="width: 220px;">Canceled receipts</a>
   </div>
 
   <hr>
@@ -61,11 +58,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            # var price = parseInt(item[7]) * parseInt(item[9])
-            # if item[8] != "":
-            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
-            # end if
-            <td class="price">${price} ${item[10]}</td>
+            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
@@ -99,11 +92,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            # var price = parseInt(item[7]) * parseInt(item[9])
-            # if item[8] != "":
-            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
-            # end if
-            <td class="price">${price} ${item[10]}</td>
+            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
@@ -137,11 +126,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            # var price = parseInt(item[7]) * parseInt(item[9])
-            # if item[8] != "":
-            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
-            # end if
-            <td class="price">${price} ${item[10]}</td>
+            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
@@ -175,11 +160,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            # var price = parseInt(item[7]) * parseInt(item[9])
-            # if item[8] != "":
-            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
-            # end if
-            <td class="price">${price} ${item[10]}</td>
+            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
@@ -213,11 +194,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            # var price = parseInt(item[7]) * parseInt(item[9])
-            # if item[8] != "":
-            #   price = (parseInt(item[7]) + parseInt(item[8])) * parseInt(item[9])
-            # end if
-            <td class="price">${price} ${item[10]}</td>
+            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
