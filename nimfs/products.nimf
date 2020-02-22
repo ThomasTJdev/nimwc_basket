@@ -6,7 +6,7 @@
 #proc genBasketProductEdit*(db: DbConn): string =
 # result = ""
 #
-# let allProducts = getAllRows(db, sql("SELECT id, identifier, productName, productDescription, price, vat, valuta, picture, active FROM basket_products ORDER BY active, productName;"))
+# let allProducts = getAllRows(db, sql("SELECT id, identifier, productName, productDescription, price, vat, valuta, picture, active, weight, quantity FROM basket_products ORDER BY active, productName;"))
 #
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_private.js" defer></script>
@@ -37,6 +37,8 @@
             <th>Price</th>
             <th>VAT</th>
             <th>Valuta</th>
+            <th>Weight</th>
+            <th>Quantity</th>
             <th>Picture</th>
             <th>Active</th>
             <th>ID</th>
@@ -59,6 +61,8 @@
               <td>${product[4]}</td>
               <td>${product[5]}</td>
               <td>${product[6]}</td>
+              <td>${product[9]}</td>
+              <td>${product[10]}</td>
               <td>
                 # if product[7] == "":
                   False
@@ -147,6 +151,20 @@
       <div class="field">
         <div class="control">
           <input type="text"  id="productEditValuta" name="valuta" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>Weight in gram (0 = disabled)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="productEditWeight" name="weight" class="input is-info" value="">
+        </div>
+      </div>
+
+      <label>Quantity (empty = disabled)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="productEditQuantity" name="quantity" class="input is-info" value="">
         </div>
       </div>
 

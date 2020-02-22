@@ -100,7 +100,10 @@
     if not isDigit(@"vat") and @"vat" != "":
       resp("VAT needs to be a number")
 
-    let id = tryInsertId(db, sql("INSERT INTO basket_products (identifier, productName, productDescription, price, vat, valuta, active) VALUES (?, ?, ?, ?, ?, ?, ?)"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active")
+    if @"quantity" == "":
+      let id = tryInsertId(db, sql("INSERT INTO basket_products (identifier, productName, productDescription, price, vat, valuta, active, weight) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active", @"weight")
+    else:
+      let id = tryInsertId(db, sql("INSERT INTO basket_products (identifier, productName, productDescription, price, vat, valuta, active, weight, quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active", @"weight", @"quantity")
 
     redirect("/basket/products/edit")
 
@@ -113,7 +116,10 @@
     if getValue(db, sql("SELECT identifier FROM basket_products WHERE identifier = ? AND id IS NOT ?"), @"identifer", @"id") != "":
       resp("Identifier already exists")
 
-    exec(db, sql("UPDATE basket_products SET identifier = ?, productName = ?, productDescription = ?, price = ?, vat = ?, valuta = ?, active = ? WHERE id = ?;"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active", @"id")
+    if @"quantity" == "":
+      exec(db, sql("UPDATE basket_products SET identifier = ?, productName = ?, productDescription = ?, price = ?, vat = ?, valuta = ?, active = ?, weight = ?, quantity = NULL WHERE id = ?;"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active", @"weight", @"id")
+    else:
+      exec(db, sql("UPDATE basket_products SET identifier = ?, productName = ?, productDescription = ?, price = ?, vat = ?, valuta = ?, active = ?, weight = ?, quantity = ? WHERE id = ?;"), @"identifier", @"name", @"description", @"price", @"vat", @"valuta", @"active", @"weight", @"quantity", @"id")
 
     redirect("/basket/products/edit")
 
@@ -152,7 +158,7 @@
     if not isDigit(@"vat") and @"vat" != "":
       resp("VAT needs to be a number")
 
-    let id = tryInsertId(db, sql("INSERT INTO basket_shipping (name, description, price, vat, valuta, maxItems, minItems) VALUES (?, ?, ?, ?, ?, ?, ?)"), @"name", @"description", @"price", @"vat", @"valuta", @"maxitems", @"minitems")
+    let id = tryInsertId(db, sql("INSERT INTO basket_shipping (name, description, price, vat, valuta, minItems, maxItems, minWeight, maxWeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"), @"name", @"description", @"price", @"vat", @"valuta", @"minitems", @"maxitems", @"minweight", @"maxweight")
 
     redirect("/basket/shipping/edit")
 
@@ -162,7 +168,7 @@
     if not c.loggedIn or c.rank notin [Admin, Moderator]:
       redirect("/")
 
-    exec(db, sql("UPDATE basket_shipping SET name = ?, description = ?, price = ?, vat = ?, valuta = ?, maxItems = ?, minItems = ? WHERE id = ?;"), @"name", @"description", @"price", @"vat", @"valuta", @"maxitems", @"minitems", @"id")
+    exec(db, sql("UPDATE basket_shipping SET name = ?, description = ?, price = ?, vat = ?, valuta = ?, minItems = ?, maxItems = ?, minWeight = ?, maxWeight = ? WHERE id = ?;"), @"name", @"description", @"price", @"vat", @"valuta", @"minitems", @"maxitems", @"minweight", @"maxweight", @"id")
 
     redirect("/basket/shipping/edit")
 
@@ -224,10 +230,10 @@
 
     case @"action"
     of "shipped":
-      exec(db, sql("UPDATE basket_purchase SET shipped = ?, modified = ? WHERE id = ?"), "true", toInt(epochTime()), @"receipt_id")
+      exec(db, sql("UPDATE basket_purchase SET shipped = ?, modified = ? WHERE id = ?"), "true", toInt(epochTime()), @"purchase_id")
 
-      if getValue(db, sql("SELECT mailShipped FROM basket_settings;")) == "true":
-        let userData = getRow(db, sql("SELECT name, email FROM basket_purchase WHERE id = ?"), @"receipt_id")
+      if getValue(db, sql("SELECT mailShipped FROM basket_settings")) == "true":
+        let userData = getRow(db, sql("SELECT name, email FROM basket_purchase WHERE id = ?"), @"purchase_id")
 
         let
           appDir       = getAppDir().replace("nimwcpkg", "")
@@ -238,13 +244,39 @@
 
         asyncCheck sendMailNow(
                   mailSubject.format(title),
-                  mailMsg.format(@"name", mainURL & "/basket/pdfreceipt/login",
-                  supportEmail, title), @"email".toLowerAscii())
+                  mailMsg.format(userData[0], mainURL & "/basket/pdfreceipt/login",
+                  supportEmail, title), userData[1].toLowerAscii())
 
     of "notshipped":
-      exec(db, sql("UPDATE basket_purchase SET shipped = ?, modified = ? WHERE id = ?"), "false", toInt(epochTime()), @"receipt_id")
+      exec(db, sql("UPDATE basket_purchase SET shipped = ?, modified = ? WHERE id = ?"), "false", toInt(epochTime()), @"purchase_id")
     else:
-      exec(db, sql("UPDATE basket_purchase SET payment_received = ?, modified = ? WHERE id = ?"), @"action", toInt(epochTime()), @"receipt_id")
+      #[
+        payment_received:
+          payed
+          awaiting
+          notchecked
+          cancelled
+      ]#
+      exec(db, sql("UPDATE basket_purchase SET payment_received = ?, modified = ? WHERE id = ?"), @"action", toInt(epochTime()), @"purchase_id")
+
+      # If cancelled, reinsert items in stock (quantity)
+      if @"action" == "cancelled":
+        let soldQuantity = getAllRows(db, sql("SELECT productcount, product_id FROM basket_purchase_products WHERE purchase_id = ?"), @"purchase_id")
+        for soldQ in soldQuantity:
+          #try:
+          let soldCount = parseInt(soldQ[0])
+          let productID = soldQ[1]
+
+          let currQuantityTmp = getValue(db, sql("SELECT quantity FROM basket_products WHERE id = ?"), productID)
+          if currQuantityTmp != "":
+            let currQuantity = parseInt(currQuantityTmp)
+
+            let newQuantity = soldCount + currQuantity
+
+            exec(db, sql("UPDATE basket_products SET quantity = ? WHERE id = ?"), newQuantity, productID)
+            #except:
+            #  resp("Der skete en fejl. Kontakt venligst support.")
+
 
     redirect("/basket/allreceipts")
 
@@ -291,21 +323,21 @@
 
     # Check params
     if @"email".len() == 0 or "@" notin @"email" or "." notin @"email":
-      resp("Fejl, email formatet er forkert")
+      resp(basketLang("errorEmail"))
     let email = @"email".toLowerAscii()
 
     if @"password".len() < 4:
-      resp("Fejl, dit password er for kort.")
+      resp(basketLang("errorPwd"))
     let passwordRaw = @"password".strip
 
     if @"address".len() < 4:
-      resp("Fejl, din adresse er for kort.")
+      resp(basketLang("errorAddress"))
 
     if @"city".len() == 0:
-      resp("Fejl, du mangler at angive din by.")
+      resp(basketLang("errorCity"))
 
     if @"productcount" == "": # or parseInt(@"productcount") > 10:
-      resp("Fejl, du skal angive antallet af produkter")
+      resp(basketLang("errorQuantity"))
 
     let
       # Password
@@ -317,7 +349,7 @@
     if @"shipping" != "":
       shippingData = getRow(db, sql("SELECT price, vat FROM basket_shipping WHERE id = ?"), @"shipping")
       if shippingData.len() == 0:
-        resp("Erro, shipping method does not exists")
+        resp(basketLang("errorShippingExist"))
 
 
     # Update next receipt number, and use current receipt number
@@ -329,7 +361,7 @@
     let purchaseID = insertID(db, sql("INSERT INTO basket_purchase (email, salt, password, name, company, companyid, address, phone, city, zip, country, shipping, shippingDetails, shippingPrice, shippingVat, payment_received, receipt_nr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"), email, salt, password, @"name", @"company", @"companyid", @"address", @"phone", @"city", @"zip", @"country", @"shipping", @"shippingDetails", shippingData[0], shippingData[1], "notchecked", $receipt_nr)
 
     if purchaseID == -1 or purchaseID == 0:
-      resp("Der skete en fejl.")
+      resp(basketLang("error"))
 
 
     # Create purchase items
@@ -347,7 +379,28 @@
       if productData.len() == 0:
         continue
 
+      # Check if item is in stock. If not, cancel buy.
+      let currentQuantityTmp = getValue(db, sql("SELECT quantity FROM basket_products WHERE id = ?"), productID)
+      var currentQuantity: int
+      if currentQuantityTmp != "":
+        #try:
+        currentQuantity = parseInt(currentQuantityTmp)
+        let newQuantity = currentQuantity - parseInt(productCount[count])
+
+        # If its out of stock
+        if newQuantity < 0:
+          exec(db, sql("DELETE FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
+          exec(db, sql("UPDATE basket_purchase SET payment_received = ? WHERE id = ?"), "cancelled", purchaseID)
+          resp(basketLang("errorNotInStock1") & " " & productData[3] & basketLang("errorNotInStock2"))
+
+        # Set new quantity
+        exec(db, sql("UPDATE basket_products SET quantity = ? WHERE id = ?"), newQuantity, productID)
+
+        #except:
+        #resp("Der skete en fejl. Kontakt venligst support.")
+
       exec(db, sql("INSERT INTO basket_purchase_products (purchase_id, product_id, price, vat, valuta, productcount) VALUES (?, ?, ?, ?, ?, ?)"), purchaseID, productID, productData[0], productData[1], productData[2], productCount[count])
+
 
       exist = true
       count      += 1
@@ -357,10 +410,11 @@
 
 
     # PDF receipt
-    let filename = $purchaseID & "_" & email.multiReplace([("@", "_"), (".", "_")]) & ".pdf"
-    let filepath = storageEFS / "receipts" / filename
+    let
+      filename = $purchaseID & "_" & email.multiReplace([("@", "_"), (".", "_")]) & ".pdf"
+      filepath = storageEFS / "receipts" / filename
+      cusmsg = if c.loggedIn: @"cusmsg" else: ""
 
-    let cusmsg = if c.loggedIn: @"cusmsg" else: ""
     pdfBuyGenerator(db, $purchaseID, filepath, email, @"multi", cusmsg)
 
 
@@ -370,25 +424,24 @@
     let payment = getValue(db, sql("SELECT paymentMethod FROM basket_settings;")).replace("\n", "<br>")
 
     var
-      receiptProductname: string
+      tmpValuta: string
       receiptValuta: string
+      receiptTotalprice: int
+      receiptProductname: string
 
-    let tempPriceTotal = getRow(db, sql("SELECT SUM(price), SUM(vat) FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
-    let receiptTotalprice = parseInt(tempPriceTotal[0]) + parseInt(tempPriceTotal[1]) + parseInt(shippingData[0]) + parseInt(shippingData[1])
+    let
+      allProduct = getAllRows(db, sql("SELECT bpp.valuta, bpp.price, bpp.vat, bpp.productCount, bp.productName FROM basket_purchase_products AS bpp LEFT JOIN basket_products AS bp ON bp.id = bpp.product_id WHERE bpp.purchase_id = ?"), purchaseID)
 
-    if split(@"id", ",").len() == 1:
-      receiptProductname = ""#getValue(db, sql("SELECT productName FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
-      receiptValuta = getValue(db, sql("SELECT valuta FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
+    # Get product data (valuta and pricing)
+    for product in allProduct:
+      receiptValuta = product[0]
+      receiptTotalprice += (parseInt(product[1]) + parseInt(product[2])) * parseInt(product[3])
+      if receiptProductname != "":
+        receiptProductname.add(", ")
+      receiptProductname.add(product[4])
 
-    else:
-      receiptProductname = "Multiple products"
-      var tmpValuta: string
-      let allValuta = getAllRows(db, sql("SELECT valuta FROM basket_purchase_products WHERE purchase_id = ?"), purchaseID)
-      for valuta in allValuta:
-        if tmpValuta != "" and tmpValuta != valuta[0]:
-          receiptValuta = ""
-          break
-        receiptValuta = valuta[0]
+    # Final price - products + shipping
+    receiptTotalprice += parseInt(shippingData[0]) + parseInt(shippingData[1])
 
 
     if @"sendmail" == "true" and getValue(db, sql("SELECT mailOrder FROM basket_settings;")) == "true":

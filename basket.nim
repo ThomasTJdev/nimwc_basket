@@ -153,6 +153,8 @@ proc basketStart*(db: DbConn) =
     price               INTEGER,
     vat                 INTEGER,
     valuta              VARCHAR(10),
+    weight              INTEGER,
+    quantity            INTEGER,
     picture             TEXT,
     active              INTEGER,
     modified timestamp not null default (STRFTIME('%s', 'now')),
@@ -171,6 +173,8 @@ proc basketStart*(db: DbConn) =
     valuta       VARCHAR(10),
     maxItems     INTEGER,
     minItems     INTEGER,
+    maxWeight    INTEGER,
+    minWeight    INTEGER,
     modified timestamp not null default (STRFTIME('%s', 'now')),
     creation timestamp not null default (STRFTIME('%s', 'now'))
   );""", []):
@@ -182,7 +186,7 @@ proc basketStart*(db: DbConn) =
       payed
       awaiting
       notchecked
-      canceled
+      cancelled
   ]#
   if not db.tryExec(sql"""
   create table if not exists basket_purchase (

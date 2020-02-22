@@ -36,7 +36,7 @@
 #
 # let buyShipped = getAllRows(db, sql("SELECT id FROM basket_purchase WHERE payment_received = ? AND shipped = ?;"), "payed", "true")
 #
-# let buyCanceled = getAllRows(db, sql("SELECT id FROM basket_purchase WHERE payment_received = ?;"), "canceled")
+# let buyCancelled = getAllRows(db, sql("SELECT id FROM basket_purchase WHERE payment_received = ?;"), "cancelled")
 #
 # let cashPayed = getRow(db, sql("SELECT SUM(bpp.price), SUM(bpp.vat) FROM basket_purchase_products AS bpp LEFT JOIN basket_purchase AS bp ON bp.id = bpp.purchase_id WHERE bp.payment_received = ?;"), "payed")
 #
@@ -67,8 +67,8 @@
           <td>${buyShipped.len()}</td>
         </tr>
         <tr>
-          <td>Canceled</td>
-          <td>${buyCanceled.len()}</td>
+          <td>Cancelled</td>
+          <td>${buyCancelled.len()}</td>
         </tr>
       </tbody>
     </table>

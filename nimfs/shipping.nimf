@@ -6,7 +6,7 @@
 #proc genBasketShippingEdit*(db: DbConn): string =
 # result = ""
 #
-# let allShipping = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta, minItems, maxItems FROM basket_shipping;"))
+# let allShipping = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta, minItems, maxItems, minWeight, maxWeight FROM basket_shipping;"))
 #
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_private.js" defer></script>
@@ -35,6 +35,8 @@
             <th>Valuta</th>
             <th>Min items</th>
             <th>Max items</th>
+            <th>Min weight</th>
+            <th>Max weight</th>
           </tr>
         </thead>
         <tbody>
@@ -53,6 +55,16 @@
               <td>
                 #if shipping[7] != "0":
                   ${shipping[7]}
+                #end if
+              </td>
+              <td>
+                #if shipping[8] != "0":
+                  ${shipping[8]}
+                #end if
+              </td>
+              <td>
+                #if shipping[9] != "0":
+                  ${shipping[9]}
                 #end if
               </td>
             </tr>
@@ -136,6 +148,20 @@
       <div class="field">
         <div class="control">
           <input type="number" id="shippingEditMaxitems" name="maxitems" class="input is-info" value="" required >
+        </div>
+      </div>
+
+      <label>Min weight in gram in basket (optional, set 0 for disabled)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="shippingEditMinweight" name="minweight" class="input is-info" value="" required >
+        </div>
+      </div>
+
+      <label>Max weight in gram in basket (optional, set 0 for disabled)</label>
+      <div class="field">
+        <div class="control">
+          <input type="number" id="shippingEditMaxweight" name="maxweight" class="input is-info" value="" required >
         </div>
       </div>
 

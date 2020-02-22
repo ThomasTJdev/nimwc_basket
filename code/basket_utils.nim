@@ -9,11 +9,11 @@ proc getProductData*(db: DbConn, identifier: string, singleProduct, loggedIn: bo
   let isActive = if loggedIn: "" else: " AND active = '1'"
 
   if singleProduct:
-    return getAllRows(db, sql("SELECT id, price, vat, valuta, productName, productDescription FROM basket_products WHERE identifier = ?" & isActive), identifier)
+    return getAllRows(db, sql("SELECT id, price, vat, valuta, productName, productDescription, weight, quantity FROM basket_products WHERE identifier = ?" & isActive), identifier)
 
   else:
     try:
-      return getAllRows(db, sql("SELECT id, price, vat, valuta, productName, productDescription FROM basket_products WHERE id in (" & identifier.multiReplace([("\'", ""), ("\"", "")]) & ")" & isActive))
+      return getAllRows(db, sql("SELECT id, price, vat, valuta, productName, productDescription, weight, quantity FROM basket_products WHERE id in (" & identifier.multiReplace([("\'", ""), ("\"", "")]) & ")" & isActive))
     except:
       return @[]
 

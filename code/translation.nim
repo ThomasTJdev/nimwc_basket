@@ -6,6 +6,33 @@ else:                   import db_sqlite
 
 # Translation
 const mainTrans* = """
+error_EN = An error occurred
+error_DK = Der er sket en fejl
+
+errorEmail_EN = Error, the email format is wrong
+errorEmail_DK = Fejl, email formatet er forkert
+
+errorPwd_EN = Error, your password is to short
+errorPwd_DK = Fejl, dit password er for kort
+
+errorAddress_EN = Error, your address is to short.
+errorAddress_DK = Fejl, din adresse er for kort.
+
+errorCity_EN = Error, please state your city.
+errorCity_DK = Fejl, du mangler at angive din by.
+
+errorQuantity_EN = Error, please state the quantity of products.
+errorQuantity_DK = Fejl, du skal angive antallet af produkter.
+
+errorShippingExist_EN = Error, the sipping method does not exist.
+errorShippingExist_DK = Fejl, forsendelsesmetoden findes ikke.
+
+errorNotInStock1_EN = Error. This amount is not in stock for
+errorNotInStock1_DK = Fejl. Antallet er ikke på lager for
+
+errorNotInStock2_EN = ". Cancelled."
+errorNotInStock2_DK = ". Købet er afbrudt."
+
 receipt_EN = Receipt
 receipt_DK = Faktura
 
@@ -51,8 +78,11 @@ email_DK = Email
 password_EN = Password (to access your receipts online)
 password_DK = Kodeord (for at tilgå dine fakturaer online)
 
-numberOfProducts_EN = Number of goods (more than 10 contact)
-numberOfProducts_DK = Antal varer (mere end 10 kontakt)
+numberOfProducts_EN = Number of goods
+numberOfProducts_DK = Antal varer
+
+inStock_EN = in stock
+inStock_DK = på lager
 
 priceVat_EN = Price incl. VAT
 priceVat_DK = Pric inkl. moms
@@ -144,8 +174,8 @@ paymentAwaiting_DK = Betaling afventer
 paymentReady_EN = Ready for payment
 paymentReady_DK = Klar til betaling
 
-paymentCanceled_EN = Canceled
-paymentCanceled_DK = Annulleret
+paymentCancelled_EN = Cancelled
+paymentCancelled_DK = Annulleret
 
 products_EN = Products
 products_DK = Varer

@@ -10,7 +10,7 @@
 # let productPrice = getProductPrice(db, identifier, singleProduct, isLoggedIn)
 #
 #
-# let shippingData = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta, minItems, maxItems FROM basket_shipping;"))
+# let shippingData = getAllRows(db, sql("SELECT id, name, description, price, vat, valuta, minItems, maxItems, minWeight, maxWeight FROM basket_shipping;"))
 #
 # let basketCountries = getValue(db, sql("SELECT countries FROM basket_settings;"))
 #
@@ -64,13 +64,19 @@
       <hr>
 
       # for product in productData:
+      #   var maxItems = "10"
+      #   var inStock: string
+      #   if product[7] != "":
+      #     maxItems = product[7]
+      #     inStock = "(" & product[7] & " " & basketLang("inStock") & ")"
+      #   end if
 
       <h5>${product[4]}</h5>
 
-      <label>${basketLang("numberOfProducts")}<span class="redAst">*</span></label>
+      <label>${basketLang("numberOfProducts")} ${inStock} <span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
-          <input id="${product[0]}-buyProductcount" type="number" name="productcount" min="1" max="10" value="1" required class="input is-success productcount" data-id="${product[0]}" data-rawPrice="${product[1]}" data-rawVat="${product[2]}" onkeyup="updatePrice(this);updatePriceCount(this);" >
+          <input id="${product[0]}-buyProductcount" type="number" name="productcount" min="1" max="${maxItems}" value="1" required class="input is-success productcount" data-id="${product[0]}" data-rawPrice="${product[1]}" data-rawVat="${product[2]}" data-weight="${product[6]}" data-quantity="${product[7]}" onkeyup="updatePrice(this);updatePriceCount(this);" >
         </div>
       </div>
 
@@ -215,7 +221,7 @@
       <div class="control">
         # let shippingCount = shippingData.len()
         # for shipping in shippingData:
-        <div class="box shippingItem" data-minitems="${shipping[6]}" data-maxitems="${shipping[7]}">
+        <div class="box shippingItem" data-minitems="${shipping[6]}" data-maxitems="${shipping[7]}" data-minweight="${shipping[8]}" data-maxweight="${shipping[9]}">
           <label class="radio">
             <input class="shippingChoice" type="radio" name="shipping" value="${shipping[0]}" data-name="${shipping[1]}" data-price="${shipping[3]}" data-vat="${shipping[4]}">
             <b>${shipping[1]}</b>
@@ -537,8 +543,8 @@
                 <td>${basketLang("paymentAwaiting")}</td>
               #of "notchecked":
                 <td>${basketLang("paymentReady")}</td>
-              #of "canceled":
-                <td>${basketLang("paymentCanceled")}</td>
+              #of "cancelled":
+                <td>${basketLang("paymentCancelled")}</td>
               #else:
                 <td></td>
               #end case
@@ -572,9 +578,9 @@
 #
 # var allProducts: seq[Row]
 # if loggedIn:
-#   allProducts = getAllRows(db, sql("SELECT productName, productDescription, price, vat, valuta, identifier, active FROM basket_products ORDER BY productName;"))
+#   allProducts = getAllRows(db, sql("SELECT productName, productDescription, price, vat, valuta, identifier, active, quantity FROM basket_products ORDER BY productName;"))
 # else:
-#   allProducts = getAllRows(db, sql("SELECT productName, productDescription, price, vat, valuta, identifier, active FROM basket_products WHERE active IS NULL or active = '1' ORDER BY productName;"))
+#   allProducts = getAllRows(db, sql("SELECT productName, productDescription, price, vat, valuta, identifier, active, quantity FROM basket_products WHERE active IS NULL or active = '1' ORDER BY productName;"))
 # end if
 <link rel="stylesheet" href="/css/basket_private.css">
 
@@ -594,11 +600,16 @@
       #   if product[6] != "1":
       #     active = "Not active"
       #   end if
+      #
+      #   var quantity: string
+      #   if product[7] != "":
+      #     quantity = "<span class='tag is-link' style='margin-left: 5px;'>" & product[7] & " in stock</span>"
+      #   end if
       <div class="box">
         <h4><a href="/basket/buynow/${product[5]}">${product[0]}</a></h4>
         <p>${product[1]}</p>
         <br>
-        <span class="tag is-info">${product[2]} ${product[4]}</span><span class="tag is-info">${active}</span>
+        <span class="tag is-info">${product[2]} ${product[4]}</span><span class="tag is-info" style="margin-left: 5px;">${active}</span>${quantity}
       </div>
       # end for
     </div>

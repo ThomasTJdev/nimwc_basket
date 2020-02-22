@@ -37,6 +37,10 @@ var langStopQuantity = {
   EN: "Choose the quantity (number of goods).",
   DK: "Angiv venligst antallet af varer."
 }
+var langStopNotInStock = {
+  EN: "That amount is not in stock. Max items are ",
+  DK: "Det antal er ikke på lager. Maks antal er "
+}
 var langStopNoShipping = {
   EN: "There's no shipping method for this number of items.",
   DK: "Der er ingen forsendelsesmetode for det antal."
@@ -121,29 +125,55 @@ function gotoBuying() {
   var shipping = document.getElementsByClassName("shippingItem");
   var shippingNumber = shipping.length;
   var countShip = 0;
+
+  var count = document.getElementsByClassName('productcount');
+  var countItemInt = 0;
+  var countWeightInt = 0;
+  for (var d = 0, dlength = count.length; d < dlength; d++) {
+    var countItem = count[d].value;
+    var countWeight = count[d].getAttribute("data-weight");
+    countItemInt += parseInt(countItem, 10);
+    countWeightInt += countItemInt * parseInt(countWeight, 10);
+
+    var countQuantity = count[d].getAttribute("data-quantity");
+    if (countQuantity != "") {
+      if (parseInt(countQuantity, 10) < parseInt(countItem, 10)) {
+        infoModal(langGen("StopNotInStock") + countQuantity);
+        return false;
+      }
+    }
+  }
+
   for (var i = 0, length = shipping.length; i < length; i++) {
     var shipItemsMin = shipping[i].getAttribute("data-minitems");
     var shipItemsMinInt = parseInt(shipItemsMin, 10);
     var shipItemsMax = shipping[i].getAttribute("data-maxitems");
     var shipItemsMaxInt = parseInt(shipItemsMax, 10);
 
-    var count = document.getElementsByClassName('productcount');
-    for (var d = 0, dlength = count.length; d < dlength; d++) {
-      var countItem = count[d].value;
-      var countItemInt = parseInt(countItem, 10);
+    var shipWeightMin = shipping[i].getAttribute("data-minweight");
+    var shipWeightMinInt = parseInt(shipWeightMin, 10);
+    var shipWeightMax = shipping[i].getAttribute("data-maxweight");
+    var shipWeightMaxInt = parseInt(shipWeightMax, 10);
 
-      if (shipItemsMaxInt < countItemInt) {
-        shipping[i].style.display = "none";
-        countShip += 1;
-      } else if (shipItemsMinInt > countItemInt) {
-        shipping[i].style.display = "none";
-        countShip += 1;
-      } else {
-        shipping[i].style.display = "block";
-        countShip -= 1;
-      }
+    if (shipItemsMaxInt != 0 && shipItemsMaxInt < countItemInt) {
+      shipping[i].style.display = "none";
+      countShip += 1;
+    } else if (shipItemsMinInt != 0 && shipItemsMinInt > countItemInt) {
+      shipping[i].style.display = "none";
+      countShip += 1;
+    } else if (shipWeightMaxInt != 0 && shipWeightMaxInt < countWeightInt) {
+      shipping[i].style.display = "none";
+      countShip += 1;
+    } else if (shipWeightMinInt != 0 && shipWeightMinInt > countWeightInt) {
+      shipping[i].style.display = "none";
+      countShip += 1;
+    } else {
+      shipping[i].style.display = "block";
+      countShip -= 1;
     }
   }
+
+
   if (shippingNumber <= countShip) {
     infoModal(langGen("StopNoShipping"));
     return false;
@@ -497,7 +527,8 @@ function colorStatusNot(id) {
 function updatePrice(el) {
   var id = el.getAttribute("id");
   var input = document.getElementById(id).value;
-  if (input == "0" || input == "" || parseInt(input) > 11) {
+  var maxitems = document.getElementById(id).getAttribute("max");
+  if (input == "0" || input == "" || parseInt(input, 10) > parseInt(maxitems, 10)) {
     document.getElementById(id).classList.remove("is-info");
     document.getElementById(id).classList.add("is-danger");
   } else {

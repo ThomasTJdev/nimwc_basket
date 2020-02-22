@@ -21,6 +21,14 @@ if ($buyToModal.length > 0) {
 
       document.getElementById("downloadreceipt").href = "/basket/getreceiptpdf/" + el.id + "_" + childs[2].innerText.replace(/\./g, '_').replace(/\@/g, '_') + ".pdf";
 
+      var actions = document.getElementById("accountingActions");
+      if (el.classList.contains("cancelled")) {
+        actions.style.display = "none";
+      } else {
+        actions.style.display = "block";
+      }
+
+      // This assigns purchase_id
       var x = document.getElementsByClassName("receipt_id");
       for (var i = 0; i < x.length; i++) {
         var str = x[i].value;
@@ -60,7 +68,10 @@ if ($productEditRow.length > 0) {
       document.getElementById("productEditPrice").value = childs[3].innerText;
       document.getElementById("productEditVat").value = childs[4].innerText;
       document.getElementById("productEditValuta").value = childs[5].innerText;
-      if (childs[7].innerText == "Active") {
+      document.getElementById("productEditWeight").value = childs[6].innerText;
+      document.getElementById("productEditQuantity").value = childs[7].innerText;
+
+      if (childs[9].innerText == "Active") {
         document.getElementById("productEditActive").value = "1";
       } else {
         document.getElementById("productEditActive").value = "0";
@@ -142,6 +153,8 @@ if ($shippingEditRow.length > 0) {
       document.getElementById("shippingEditValuta").value = childs[4].innerText;
       document.getElementById("shippingEditMinitems").value = childs[5].innerText;
       document.getElementById("shippingEditMaxitems").value = childs[6].innerText;
+      document.getElementById("shippingEditMinweight").value = childs[7].innerText;
+      document.getElementById("shippingEditMaxweight").value = childs[8].innerText;
 
       document.getElementById("formShipping").action = "/basket/shipping/edit";
 

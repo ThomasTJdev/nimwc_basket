@@ -14,7 +14,7 @@
 #
 # let buyShipped = getAllRows(db, sql("SELECT bp.id, bp.name, bp.email, bp.creation, bp.modified, bp.receipt_nr, bp.shipped, SUM(bpp.price), SUM(bpp.vat), bpp.valuta FROM basket_purchase AS bp LEFT JOIN basket_purchase_products AS bpp ON bpp.purchase_id = bp.id WHERE bp.payment_received = ? AND bp.shipped = ? GROUP BY bpp.purchase_id ORDER BY bp.creation;"), "payed", "true")
 #
-# let buyCanceled = getAllRows(db, sql("SELECT bp.id, bp.name, bp.email, bp.creation, bp.modified, bp.receipt_nr, bp.shipped, SUM(bpp.price), SUM(bpp.vat), bpp.valuta FROM basket_purchase AS bp LEFT JOIN basket_purchase_products AS bpp ON bpp.purchase_id = bp.id WHERE bp.payment_received = ? GROUP BY bpp.purchase_id ORDER BY bp.creation;"), "canceled")
+# let buyCancelled = getAllRows(db, sql("SELECT bp.id, bp.name, bp.email, bp.creation, bp.modified, bp.receipt_nr, bp.shipped, SUM(bpp.price), SUM(bpp.vat), bpp.valuta FROM basket_purchase AS bp LEFT JOIN basket_purchase_products AS bpp ON bpp.purchase_id = bp.id WHERE bp.payment_received = ? GROUP BY bpp.purchase_id ORDER BY bp.creation;"), "cancelled")
 #
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_private.js" defer></script>
@@ -30,7 +30,7 @@
     <a href="#awaiting" class="button is-link" style="width: 220px;margin-bottom: 10px;">Awaiting receipts</a>
     <a href="#payed" class="button is-link" style="width: 220px;margin-bottom: 10px;">Payed receipts</a>
     <a href="#payedshipped" class="button is-link" style="width: 220px;margin-bottom: 10px;">Payed and shipped receipts</a>
-    <a href="#canceled" class="button is-link" style="width: 220px;">Canceled receipts</a>
+    <a href="#cancelled" class="button is-link" style="width: 220px;">Cancelled receipts</a>
   </div>
 
   <hr>
@@ -172,7 +172,7 @@
   <hr>
 
   <div class="buyItem buyBlog">
-    <h3 id="canceled">Receipts canceled</h3>
+    <h3 id="cancelled">Receipts cancelled</h3>
     <div class="table-overflow">
       <table class="buy table is-bordered is-hoverable">
         <thead>
@@ -187,8 +187,8 @@
           </tr>
         </thead>
         <tbody>
-          # for item in buyCanceled:
-          <tr class="receiptItem" id="${item[0]}">
+          # for item in buyCancelled:
+          <tr class="receiptItem cancelled" id="${item[0]}">
             <td class="receipt">${item[5]}</td>
             <td class="name">${item[1]}</td>
             <td class="email">${item[2]}</td>
@@ -253,19 +253,19 @@
 
       <hr>
 
-      <div class="has-text-centered">
+      <div id="accountingActions" class="has-text-centered">
 
         <h3>Shipping</h3>
 
         <form method="POST" action="/basket/receipt/status/shipped">
-          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <input name="purchase_id" class="receipt_id input is-info" style="display: none;">
           <button class="button is-success" style="width: 200px;">Shipped (done)</button>
         </form>
 
         <br>
 
         <form method="POST" action="/basket/receipt/status/notshipped">
-          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <input name="purchase_id" class="receipt_id input is-info" style="display: none;">
           <button class="button is-danger" style="width: 200px;">Err, not shipped</button>
         </form>
 
@@ -274,29 +274,29 @@
         <h3>Payment</h3>
 
         <form method="POST" action="/basket/receipt/status/payed">
-          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <input name="purchase_id" class="receipt_id input is-info" style="display: none;">
           <button class="button is-success" style="width: 200px;">Payed</button>
         </form>
 
         <br>
 
         <form method="POST" action="/basket/receipt/status/awaiting">
-          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <input name="purchase_id" class="receipt_id input is-info" style="display: none;">
           <button class="button is-info" style="width: 200px;">Awaiting</button>
         </form>
 
         <br>
 
         <form method="POST" action="/basket/receipt/status/notchecked">
-          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
+          <input name="purchase_id" class="receipt_id input is-info" style="display: none;">
           <button class="button is-warning" style="width: 200px;">Not checked</button>
         </form>
 
         <br>
 
-        <form method="POST" action="/basket/receipt/status/canceled">
-          <input name="receipt_id" class="receipt_id input is-info" style="display: none;">
-          <button class="button is-danger" style="width: 200px;">Canceled</button>
+        <form method="POST" action="/basket/receipt/status/cancelled">
+          <input name="purchase_id" class="receipt_id input is-info" style="display: none;">
+          <button class="button is-danger" style="width: 200px;">Cancelled</button>
         </form>
       </div>
 

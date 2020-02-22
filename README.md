@@ -10,7 +10,28 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 * [mime](https://github.com/enthus1ast/nimMime) - Clone the repo and run `nimble install`
 
 
+## TODO
+* Credit note
+* Full translation of nimf-files
+* API integration to payment solutions
+
+
 ## Changelog
+### v0.8
+* More translations.
+* Do not allow change an order, which has been cancelled (e.g. reactive it).
+* Implement quantity for each product. Check for item in stock.
+* Reduce stock when buying, increase stock when cancelling an order.
+* Implement weight for products.
+* Base shipping criteria on product weight.
+```sql
+ALTER TABLE basket_products ADD COLUMN quantity INTEGER;
+ALTER TABLE basket_products ADD COLUMN weight INTEGER;
+ALTER TABLE basket_shipping ADD COLUMN maxWeight INTEGER;
+ALTER TABLE basket_shipping ADD COLUMN minWeight INTEGER;
+```
+
+
 ### v0.7
 * Allow spaces in phone number
 * When changing settings in account return to accounting after changes
