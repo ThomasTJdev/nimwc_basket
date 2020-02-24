@@ -30,11 +30,11 @@ proc getProductPrice*(db: DbConn, identifier: string, singleProduct, loggedIn: b
     let data = getAllRows(db, sql("SELECT price, vat FROM basket_products WHERE identifier in (?)" & isActive), identifier)
 
     var
-      price: int
-      vat: int
+      price: float
+      vat: float
 
     for d in data:
-      price += parseInt(d[0])
-      vat += parseInt(d[1])
+      price += parseFloat(d[0])
+      vat += parseFloat(d[1])
 
     return @[$price, $vat]

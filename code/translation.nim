@@ -90,6 +90,9 @@ priceVat_DK = Pric inkl. moms
 hereofVat_EN = Hereof is VAT
 hereofVat_DK = Heraf udgør moms
 
+hereofVatS_EN = hereof is VAT
+hereofVatS_DK = heraf udgør moms
+
 phone_EN = Phone
 phone_DK = Telefon
 
@@ -129,8 +132,14 @@ quantity_DK = Antal
 priceNoVat_EN = Price (w/o VAT)
 priceNoVat_DK = Pris (u. moms)
 
-deliveryPriceNoVat_EN = Delivery price (w/o VAT)
-deliveryPriceNoVat_DK = Leveringspris (u. moms)
+itemPrice_EN = Item price
+itemPrice_DK = Varens pris
+
+deliveryPrice_EN = Delivery price
+deliveryPrice_DK = Leveringspris
+
+totalPrice_EN = Total price
+totalPrice_DK = Samlet pris
 
 totalPriceWithVat_EN = Total price (w. Vat)
 totalPriceWithVat_DK = Samlet pris (m. moms)

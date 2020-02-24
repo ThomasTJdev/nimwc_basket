@@ -71,6 +71,12 @@ proc parseIntSafe(str: string): int =
   except:
     return 0
 
+proc parseFloatSafe(str: string): float =
+  try:
+    return parseFloat(str)
+  except:
+    return 0.0
+
 include "nimfs/settings.nimf"
 include "nimfs/accounting.nimf"
 include "nimfs/basket.nimf"

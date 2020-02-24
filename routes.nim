@@ -426,7 +426,7 @@
     var
       tmpValuta: string
       receiptValuta: string
-      receiptTotalprice: int
+      receiptTotalprice: float
       receiptProductname: string
 
     let
@@ -435,13 +435,13 @@
     # Get product data (valuta and pricing)
     for product in allProduct:
       receiptValuta = product[0]
-      receiptTotalprice += (parseInt(product[1]) + parseInt(product[2])) * parseInt(product[3])
+      receiptTotalprice += (parseFloat(product[1]) + parseFloat(product[2])) * parseFloat(product[3])
       if receiptProductname != "":
         receiptProductname.add(", ")
       receiptProductname.add(product[4])
 
     # Final price - products + shipping
-    receiptTotalprice += parseInt(shippingData[0]) + parseInt(shippingData[1])
+    receiptTotalprice += parseFloat(shippingData[0]) + parseFloat(shippingData[1])
 
 
     if @"sendmail" == "true" and getValue(db, sql("SELECT mailOrder FROM basket_settings;")) == "true":

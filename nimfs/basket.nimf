@@ -16,17 +16,11 @@
 #
 # let lang = getValue(db, sql("SELECT language FROM basket_settings;"))
 #
-## var price: int
-## if productData[2] == "":
-##   price = parseIntSafe(productData[1])
-## else:
-##   price = parseIntSafe(productData[1]) + parseIntSafe(productData[2])
-## end if
 
 <link rel="stylesheet" href="/css/basket_private.css">
 <script src="/js/basket_ui_${basketV}.js" defer></script>
 <input id="userLang" value="${lang}" style="display: none;">
-<input id="priceTotal" value="${parseIntSafe(productPrice[0]) + parseIntSafe(productPrice[1])}" style="display: none;">
+<input id="priceTotal" value="${parseFloatSafe(productPrice[0]) + parseFloatSafe(productPrice[1])}" style="display: none;">
 
 # if productData.len() == 1:
 #   for product in productData:
@@ -76,21 +70,21 @@
       <label>${basketLang("numberOfProducts")} ${inStock} <span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
-          <input id="${product[0]}-buyProductcount" type="number" name="productcount" min="1" max="${maxItems}" value="1" required class="input is-success productcount" data-id="${product[0]}" data-rawPrice="${product[1]}" data-rawVat="${product[2]}" data-weight="${product[6]}" data-quantity="${product[7]}" onkeyup="updatePrice(this);updatePriceCount(this);" >
+          <input id="${product[0]}-buyProductcount" type="number" name="productcount" min="1" max="${maxItems}" value="1" required class="input is-success productcount" data-id="${product[0]}" data-rawPrice="${product[1]}" data-rawVat="${product[2]}" data-weight="${product[6]}" data-quantity="${product[7]}" data-valuta="${product[3]}" onkeyup="updatePrice(this);updatePriceCount(this);" >
         </div>
       </div>
 
       <label>${basketLang("priceVat")} (${product[3]})</label>
       <div class="field">
         <div class="control">
-          <input id="${product[0]}-updatedPrice" type="text" disabled="disabled" class="input is-info updatedPrice" value="${parseIntSafe(product[1]) + parseIntSafe(product[2])}" >
+          <input id="${product[0]}-updatedPrice" type="text" disabled="disabled" class="input is-info updatedPrice" value="${parseFloatSafe(product[1]) + parseFloatSafe(product[2])}" >
         </div>
       </div>
 
       <label>${basketLang("hereofVat")}</label>
       <div class="field">
         <div class="control">
-          <input id="${product[0]}-updatedVat" type="text" disabled="disabled" class="input is-info" value="${product[2]}" >
+          <input id="${product[0]}-updatedVat" type="text" disabled="disabled" class="input is-info" value="${parseFloatSafe(product[2])}" >
         </div>
       </div>
 
@@ -231,7 +225,7 @@
               <p>${shipping[2]}</p>
             # end if
             <p>
-              ${basketLang("price")}: ${shipping[3]} ${shipping[5]} (${basketLang("vatS")}: ${shipping[4]})
+              ${basketLang("price")}: ${parseFloatSafe(shipping[3]) + parseFloatSafe(shipping[4])} ${shipping[5]} (${basketLang("hereofVatS")}: ${parseFloatSafe(shipping[4])})
             </p>
           </div>
         </div>
@@ -278,8 +272,8 @@
       <table class="table is-bordered is-hoverable info">
         <tbody>
           <tr>
-            <td class="name">${basketLang("product")}</td>
-            <td id="checkProduct">
+            <td class="name"><b>${basketLang("product")}</b></td>
+            <td id="checkProduct" colspan="2">
               # if productData.len() == 1:
               #   for product in productData:
                     ${product[4]}
@@ -297,35 +291,35 @@
           </tr>
           # if productData.len() == 1:
           <tr>
-            <td>${basketLang("quantity")}</td>
+            <td><b>${basketLang("quantity")}</b></td>
             # for product in productData:
-            <td id="${product[0]}-checkNumber" class="checkNumber"></td>
+            <td id="${product[0]}-checkNumber" class="checkNumber" colspan="2"></td>
             # end for
           </tr>
           # end if
           <tr>
-            <td>${basketLang("priceNoVat")}</td>
-            <td id="checkPrice"></td>
+            <td><b>${basketLang("delivery")}</b></td>
+            <td id="checkShipping" colspan="2"></td>
           </tr>
           <tr>
-            <td>${basketLang("vat")}</td>
-            <td id="checkPriceVat"></td>
+            <td class="greyback"></td>
+            <td class="greyback has-text-centered"><b>${basketLang("price")}</b></td>
+            <td class="greyback has-text-centered"><b>${basketLang("hereofVat")}</b></td>
           </tr>
           <tr>
-            <td>${basketLang("delivery")}</td>
-            <td id="checkShipping"></td>
+            <td>${basketLang("itemPrice")}</td>
+            <td id="checkPrice" class="price"></td>
+            <td id="checkPriceVat" class="price"></td>
           </tr>
           <tr>
-            <td>${basketLang("deliveryPriceNoVat")}</td>
-            <td id="checkShippingPrice"></td>
+            <td>${basketLang("deliveryPrice")}</td>
+            <td id="checkShippingPrice" class="price"></td>
+            <td id="checkShippingPriceVat" class="price"></td>
           </tr>
           <tr>
-            <td>${basketLang("vat")}</td>
-            <td id="checkShippingPriceVat"></td>
-          </tr>
-          <tr>
-            <td>${basketLang("totalPriceWithVat")}</td>
-            <td id="checkPriceTotal"></td>
+            <td><b>${basketLang("totalPrice")}</b></td>
+            <td id="checkPriceTotal" class="price"></td>
+            <td id="checkPriceTotalVat" class="price"></td>
           </tr>
         </tbody>
       </table>

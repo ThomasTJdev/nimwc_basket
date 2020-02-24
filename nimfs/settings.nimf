@@ -85,7 +85,7 @@
           <td style="width: 200px;">Payed (w. VAT)</td>
           <td>
             # if cashPayed[0] != "" and cashPayed[1] != "":
-              ${parseIntSafe(cashPayed[0]) + parseIntSafe(cashPayed[1])}
+              ${parseFloatSafe(cashPayed[0]) + parseFloatSafe(cashPayed[1])}
             # end if
           </td>
         </tr>
@@ -99,7 +99,7 @@
           <td>Awaiting payments (w. VAT)</td>
           <td>
             # if cashAwaiting[0] != "" and cashAwaiting[1] != "":
-              ${parseIntSafe(cashAwaiting[0]) + parseIntSafe(cashAwaiting[1])}
+              ${parseFloatSafe(cashAwaiting[0]) + parseFloatSafe(cashAwaiting[1])}
             # end if
           </td>
         </tr>

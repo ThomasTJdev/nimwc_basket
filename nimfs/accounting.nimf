@@ -58,7 +58,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
+            <td class="price">${parseFloatSafe(item[7]) + parseFloatSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
@@ -92,7 +92,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
+            <td class="price">${parseFloatSafe(item[7]) + parseFloatSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
@@ -126,7 +126,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
+            <td class="price">${parseFloatSafe(item[7]) + parseFloatSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
@@ -160,7 +160,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
+            <td class="price">${parseFloatSafe(item[7]) + parseFloatSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for
@@ -194,7 +194,7 @@
             <td class="email">${item[2]}</td>
             <td class="created">${epochDate(item[3], "YYYY-MM-DD HH:mm")}</td>
             <td class="modified">${epochDate(item[4], "YYYY-MM-DD HH:mm")}</td>
-            <td class="price">${parseIntSafe(item[7]) + parseIntSafe(item[8])} ${item[9]}</td>
+            <td class="price">${parseFloatSafe(item[7]) + parseFloatSafe(item[8])} ${item[9]}</td>
             <td class="shipped">${item[6]}</td>
           </tr>
           # end for

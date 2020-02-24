@@ -334,20 +334,20 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
     shipName: string
     shipDesr: string
     shipValuta: string
-    shipPrice: int
-    shipVat: int
-    shipTotalPrice: int
+    shipPrice: float
+    shipVat: float
+    shipTotalPrice: float
 
     # Product
     buyValuta: string
-    productTotalPrice: int
-    productTotalVat: int
-    productTotal: int
+    productTotalPrice: float
+    productTotalVat: float
+    productTotal: float
 
     # Price
-    totalPrice: int
-    totalVat: int
-    total: int
+    totalPrice: float
+    totalVat: float
+    total: float
 
   let
     cusEmail     = email
@@ -378,8 +378,8 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
     customerInfo = cusCompany & "\n" & customerInfo
 
   for product in products:
-    productTotalPrice += parseInt(product[2]) * parseInt(product[5])
-    productTotalVat   += parseInt(product[3]) * parseInt(product[5])
+    productTotalPrice += (parseFloat(product[2]) * parseFloat(product[5]))
+    productTotalVat   += (parseFloat(product[3]) * parseFloat(product[5]))
     productTotal      += productTotalPrice + productTotalVat
     buyValuta          = product[4]
 
@@ -388,8 +388,8 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
     let shipData = getRow(db, sql("SELECT name, description, price, vat, valuta FROM basket_shipping WHERE id = ?"), buyShip)
     shipName    = shipData[0]
     shipDesr    = shipData[1]
-    shipPrice   = parseInt(shipData[2])
-    shipVat     = parseInt(shipData[3])
+    shipPrice   = parseFloat(shipData[2])
+    shipVat     = parseFloat(shipData[3])
     shipValuta  = shipData[4]
 
     shipTotalPrice = shipPrice + shipVat
@@ -492,7 +492,7 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
   # Description
   #if products.len() == 1:
   #  let desr = if cusmsg == "": singleProduct[1] else: cusmsg & "\n\n" & singleProduct[1]
-  # 
+  #
   #  let productDesrHeight = rowHeightCalc(doc, 10, pageWidth - 5, desr)
   #  doc.cellDrawRectText(15, y, (pageWidth - 5), productDesrHeight, desr, isCell=false)
   #  y += 3.0 + productDesrHeight
@@ -540,10 +540,10 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
   # Insert purchase details
   for product in products:
     let
-      pPrice  = parseInt(product[2])
-      pVat    = parseInt(product[3])
+      pPrice  = parseFloat(product[2])
+      pVat    = parseFloat(product[3])
       pValuta = product[4]
-      pCount  = parseInt(product[5])
+      pCount  = parseFloat(product[5])
       pName   = product[6]
       pDescr  = product[7]
 
@@ -551,7 +551,7 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
       pTotalVat   = pVat * pCount
 
     # Use pageCheckText
-    y += drawRow(doc, pName, $pCount, $pPrice, $pTotalPrice, $pTotalVat, pValuta, y, x, c1, c2, c3, c4, c5)
+    y += drawRow(doc, pName, product[5], $pPrice, $pTotalPrice, $pTotalVat, pValuta, y, x, c1, c2, c3, c4, c5)
 
 
   # Insert shipping details

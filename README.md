@@ -17,6 +17,10 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 
 
 ## Changelog
+### v0.9
+* Changed prices from int to float
+* Redesign checkout - better overview and include valuta
+
 ### v0.8
 * More translations.
 * Do not allow change an order, which has been cancelled (e.g. reactive it).

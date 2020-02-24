@@ -87,6 +87,13 @@ var langAcceptTerms = {
 */
 
 
+function parseFloatSafe(strRaw) {
+  if (strRaw == "") {
+    return parseFloat("0.0");
+  }
+  return parseFloat(strRaw.replace(/\./g, '').replace(',', '.'));
+}
+
 
 
 // Function to check if the return has encountered an error
@@ -237,17 +244,20 @@ function gotoAccept() {
 
   var totalPriceWithoutVat = 0;
   var totalPriceVat = 0;
+  var valuta = "";
 
   var count = document.getElementsByClassName('productcount');
   for (var i = 0, length = count.length; i < length; i++) {
-    var tmpRawPrice = parseInt(count[i].getAttribute("data-rawprice"), 10);
-    var tmpRawVat = parseInt(count[i].getAttribute("data-rawvat"), 10);
-    var number = parseInt(count[i].value, 10);
+    var tmpRawPrice = parseFloatSafe(count[i].getAttribute("data-rawprice"));
+    var tmpRawVat = parseFloatSafe(count[i].getAttribute("data-rawvat"));
+    var number = parseFloatSafe(count[i].value);
 
     totalPriceWithoutVat += tmpRawPrice * number;
     totalPriceVat += tmpRawVat * number;
+
+    valuta = count[i].getAttribute("data-valuta");
   }
-  var totalPriceAndShipping = totalPriceWithoutVat + totalPriceVat + parseInt(shippingPrice, 10) + parseInt(shippingVat, 10);
+  var totalPriceAndShipping = totalPriceWithoutVat + totalPriceVat + parseFloatSafe(shippingPrice) + parseFloatSafe(shippingVat);
 
   if (document.getElementsByClassName("checkNumber")[0]) {
     var parNumber = "";
@@ -261,12 +271,13 @@ function gotoAccept() {
     document.getElementsByClassName("checkNumber")[0].innerHTML = parNumber;
   }
 
-  document.getElementById("checkPrice").innerHTML = totalPriceWithoutVat;
-  document.getElementById("checkPriceVat").innerHTML = totalPriceVat;
+  document.getElementById("checkPrice").innerHTML = (totalPriceWithoutVat + totalPriceVat) + " " + valuta;
+  document.getElementById("checkPriceVat").innerHTML = totalPriceVat + " " + valuta;
   document.getElementById("checkShipping").innerHTML = shippingName;
-  document.getElementById("checkShippingPrice").innerHTML = shippingPrice;
-  document.getElementById("checkShippingPriceVat").innerHTML = shippingVat;
-  document.getElementById("checkPriceTotal").innerHTML = totalPriceAndShipping;
+  document.getElementById("checkShippingPrice").innerHTML = (parseFloatSafe(shippingPrice) + parseFloatSafe(shippingVat)) + " " + valuta;
+  document.getElementById("checkShippingPriceVat").innerHTML = shippingVat + " " + valuta;
+  document.getElementById("checkPriceTotal").innerHTML = totalPriceAndShipping + " " + valuta;
+  document.getElementById("checkPriceTotalVat").innerHTML = (totalPriceVat + parseFloatSafe(shippingVat)) + " " + valuta;
 
   document.getElementById("checkName").innerHTML = parName;
   document.getElementById("checkEmail").innerHTML = parEmail;
@@ -347,6 +358,7 @@ function doTheBuy() {
   var parId = document.getElementById("id").value;
   if (parId == "") {
     infoModal(langGen("ErrorContact"));
+    buttons.style.display = "block";
     return;
   }
   var multi = document.getElementById("id").getAttribute("data-multi");
@@ -391,6 +403,7 @@ function doTheBuy() {
   var parAcc = document.getElementById("acceptBuy").checked;
   if (!parAcc) {
     infoModal(langGen("AcceptTerms"));
+    buttons.style.display = "block";
     return;
   }
 
@@ -483,7 +496,7 @@ function updatePriceTotal() {
     if (parNumber == "" || parNumber == "0" || isNaN(parNumber)) {
       return false;
     }
-    priceTotal += parseInt(parNumber, 10);
+    priceTotal += parseFloatSafe(parNumber);
   }
 
   var shippingPrice = "";
@@ -495,16 +508,16 @@ function updatePriceTotal() {
       shippingVat = radios[i].getAttribute("data-vat");
     }
   }
-  priceTotal += parseInt(shippingPrice, 10);
-  priceTotal += parseInt(shippingVat, 10);
+  priceTotal += parseFloatSafe(shippingPrice);
+  priceTotal += parseFloatSafe(shippingVat);
 
   document.getElementById("priceTotal").value = priceTotal;
 }
 function updatePriceCount(el) {
   var id = el.getAttribute("id");
-  var price = parseInt(el.getAttribute("data-rawPrice"), 10);
-  var vat = parseInt(el.getAttribute("data-rawVat"), 10);
-  var numbers = parseInt(el.value, 10);
+  var price = parseFloatSafe(el.getAttribute("data-rawPrice"));
+  var vat = parseFloatSafe(el.getAttribute("data-rawVat"));
+  var numbers = parseFloatSafe(el.value);
   document.getElementById(el.getAttribute("data-id") + "-updatedPrice").value = price * numbers + vat * numbers;
   document.getElementById(el.getAttribute("data-id") + "-updatedVat").value = vat * numbers;
 
@@ -528,7 +541,7 @@ function updatePrice(el) {
   var id = el.getAttribute("id");
   var input = document.getElementById(id).value;
   var maxitems = document.getElementById(id).getAttribute("max");
-  if (input == "0" || input == "" || parseInt(input, 10) > parseInt(maxitems, 10)) {
+  if (input == "0" || input == "" || parseInt(input) > parseInt(maxitems)) {
     document.getElementById(id).classList.remove("is-info");
     document.getElementById(id).classList.add("is-danger");
   } else {
