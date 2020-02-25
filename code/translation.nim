@@ -87,6 +87,9 @@ inStock_DK = på lager
 priceVat_EN = Price incl. VAT
 priceVat_DK = Pric inkl. moms
 
+hereofVatShort_EN = Hereof VAT
+hereofVatShort_DK = Heraf moms
+
 hereofVat_EN = Hereof is VAT
 hereofVat_DK = Heraf udgør moms
 

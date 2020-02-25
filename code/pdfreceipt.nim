@@ -1,11 +1,18 @@
 # Copyright 2020 - Thomas T. Jarløv
 
-import datetime2human, math, strutils, db_sqlite, times, os
+import datetime2human, math, strutils, db_sqlite, times, os, strformat
 import unicode except strip
 import nimPDF/nimPDF
 import translation
 
 
+proc parseFloatPretty(str: string): string =
+  try:
+    let tmpFloat = parseFloat(str)
+    return &"{tmpFloat:.2f}"
+  except:
+    return "0.00"
+    
 #template fontH1() =
 #  doc.setFont("Roboto", {FS_BOLD}, 12)
 
@@ -551,12 +558,12 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
       pTotalVat   = pVat * pCount
 
     # Use pageCheckText
-    y += drawRow(doc, pName, product[5], $pPrice, $pTotalPrice, $pTotalVat, pValuta, y, x, c1, c2, c3, c4, c5)
+    y += drawRow(doc, pName, product[5], parseFloatPretty($pPrice), parseFloatPretty($pTotalPrice), parseFloatPretty($pTotalVat), pValuta, y, x, c1, c2, c3, c4, c5)
 
 
   # Insert shipping details
   if buyShip != "" and buyShip != "0":
-    y += drawRow(doc, shipName, "1", $shipPrice, $shipPrice, $shipVat, shipValuta, y, x, c1, c2, c3, c4, c5)
+    y += drawRow(doc, shipName, "1", parseFloatPretty($shipPrice), parseFloatPretty($shipPrice), parseFloatPretty($shipVat), shipValuta, y, x, c1, c2, c3, c4, c5)
 
   y += 7.0
 
@@ -577,9 +584,9 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
   doc.drawText(price1WidthCheck, y, basketLang("totalWoVat"))
 
   # Price number
-  let price2Width = doc.getTextWidth($totalPrice & " " & buyValuta)
+  let price2Width = doc.getTextWidth(parseFloatPretty($totalPrice) & " " & buyValuta)
   let price2WidthCheck = (15 + rowHeadingWidth10 * 8) + csum4 - price2Width - 2
-  doc.drawText(price2WidthCheck, y, $totalPrice & " " & buyValuta)
+  doc.drawText(price2WidthCheck, y, parseFloatPretty($totalPrice) & " " & buyValuta)
   y += 5.0
 
 
@@ -589,9 +596,9 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
   doc.drawText(vat1WidthCheck, y, basketLang("vat"))
 
   # VAT number
-  let vat2Width = doc.getTextWidth($totalVat & " " & buyValuta)
+  let vat2Width = doc.getTextWidth(parseFloatPretty($totalVat) & " " & buyValuta)
   let vat2WidthCheck = (15 + rowHeadingWidth10 * 8) + csum4 - vat2Width - 2
-  doc.drawText(vat2WidthCheck, y, $totalVat & " " & buyValuta)
+  doc.drawText(vat2WidthCheck, y, parseFloatPretty($totalVat) & " " & buyValuta)
   y += 3.0
 
   # Line before total price including vat
@@ -608,9 +615,9 @@ proc content(db: DbConn, doc: PDF, id, email, multi, cusmsg: string) =
   doc.drawText(sum1WidthCheck, y, basketLang("totalWVat"))
 
   # Price w. VAT number
-  let sum2Width = doc.getTextWidth($total & " " & buyValuta)
+  let sum2Width = doc.getTextWidth(parseFloatPretty($total) & " " & buyValuta)
   let sum2WidthCheck = (15 + rowHeadingWidth10 * 8) + csum4 - sum2Width - 2
-  doc.drawText(sum2WidthCheck, y, $total & " " & buyValuta)
+  doc.drawText(sum2WidthCheck, y, parseFloatPretty($total) & " " & buyValuta)
   y += 3.0
 
   # Line after total price including vat

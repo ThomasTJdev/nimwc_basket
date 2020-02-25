@@ -16,6 +16,7 @@ import
   otp,
   parsecfg,
   smtp,
+  strformat,
   strutils,
   tables
 
@@ -76,6 +77,13 @@ proc parseFloatSafe(str: string): float =
     return parseFloat(str)
   except:
     return 0.0
+
+proc parseFloatPretty(str: string): string =
+  try:
+    let tmpFloat = parseFloat(str)
+    return &"{tmpFloat:.2f}"
+  except:
+    return "0.00"
 
 include "nimfs/settings.nimf"
 include "nimfs/accounting.nimf"

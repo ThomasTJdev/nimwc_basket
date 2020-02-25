@@ -70,21 +70,21 @@
       <label>${basketLang("numberOfProducts")} ${inStock} <span class="redAst">*</span></label>
       <div class="field">
         <div class="control">
-          <input id="${product[0]}-buyProductcount" type="number" name="productcount" min="1" max="${maxItems}" value="1" required class="input is-success productcount" data-id="${product[0]}" data-rawPrice="${product[1]}" data-rawVat="${product[2]}" data-weight="${product[6]}" data-quantity="${product[7]}" data-valuta="${product[3]}" onkeyup="updatePrice(this);updatePriceCount(this);" >
+          <input id="${product[0]}-buyProductcount" type="number" name="productcount" min="1" max="${maxItems}" value="1" required class="input is-success productcount" data-id="${product[0]}" data-rawPrice="${parseFloatPretty(product[1])}" data-rawVat="${parseFloatPretty(product[2])}" data-weight="${product[6]}" data-quantity="${product[7]}" data-valuta="${product[3]}" onkeyup="updatePrice(this);updatePriceCount(this);" >
         </div>
       </div>
 
       <label>${basketLang("priceVat")} (${product[3]})</label>
       <div class="field">
         <div class="control">
-          <input id="${product[0]}-updatedPrice" type="text" disabled="disabled" class="input is-info updatedPrice" value="${parseFloatSafe(product[1]) + parseFloatSafe(product[2])}" >
+          <input id="${product[0]}-updatedPrice" type="text" disabled="disabled" class="input is-info updatedPrice" value="${parseFloatPretty($(parseFloatSafe(product[1]) + parseFloatSafe(product[2])))}" >
         </div>
       </div>
 
       <label>${basketLang("hereofVat")}</label>
       <div class="field">
         <div class="control">
-          <input id="${product[0]}-updatedVat" type="text" disabled="disabled" class="input is-info" value="${parseFloatSafe(product[2])}" >
+          <input id="${product[0]}-updatedVat" type="text" disabled="disabled" class="input is-info" value="${parseFloatPretty(product[2])}" >
         </div>
       </div>
 
@@ -217,7 +217,7 @@
         # for shipping in shippingData:
         <div class="box shippingItem" data-minitems="${shipping[6]}" data-maxitems="${shipping[7]}" data-minweight="${shipping[8]}" data-maxweight="${shipping[9]}">
           <label class="radio">
-            <input class="shippingChoice" type="radio" name="shipping" value="${shipping[0]}" data-name="${shipping[1]}" data-price="${shipping[3]}" data-vat="${shipping[4]}">
+            <input class="shippingChoice" type="radio" name="shipping" value="${shipping[0]}" data-name="${shipping[1]}" data-price="${parseFloatPretty(shipping[3])}" data-vat="${parseFloatPretty(shipping[4])}">
             <b>${shipping[1]}</b>
           </label>
           <div class="shippingDetails">
@@ -225,7 +225,7 @@
               <p>${shipping[2]}</p>
             # end if
             <p>
-              ${basketLang("price")}: ${parseFloatSafe(shipping[3]) + parseFloatSafe(shipping[4])} ${shipping[5]} (${basketLang("hereofVatS")}: ${parseFloatSafe(shipping[4])})
+              ${basketLang("price")}: ${parseFloatPretty($(parseFloatSafe(shipping[3]) + parseFloatSafe(shipping[4])))} ${shipping[5]} (${basketLang("hereofVatShort")}: ${parseFloatPretty(shipping[4])})
             </p>
           </div>
         </div>

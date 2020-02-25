@@ -242,10 +242,13 @@
           mailSubject  = basketLang("mailSubjectShipped")
           mailMsg      = basketLang("mailMsgShipped")
 
+        # TODO https://github.com/ThomasTJdev/nim_websitecreator/issues/127
+        let userTitle = dict.getSectionValue("Server", "title")
+
         asyncCheck sendMailNow(
-                  mailSubject.format(title),
+                  mailSubject.format(userTitle),
                   mailMsg.format(userData[0], mainURL & "/basket/pdfreceipt/login",
-                  supportEmail, title), userData[1].toLowerAscii())
+                  supportEmail, userTitle), userData[1].toLowerAscii())
 
     of "notshipped":
       exec(db, sql("UPDATE basket_purchase SET shipped = ?, modified = ? WHERE id = ?"), "false", toInt(epochTime()), @"purchase_id")
@@ -452,15 +455,18 @@
         mailSubject  = basketLang("mailSubjectCongrats")
         mailMsg      = basketLang("mailMsgCongrats")
 
+      # TODO https://github.com/ThomasTJdev/nim_websitecreator/issues/127
+      let userTitle = dict.getSectionValue("Server", "title")
+
       asyncCheck sendBasketReceipt(email,
-                    mailSubject.format(title, receiptProductname),
+                    mailSubject.format(userTitle, receiptProductname),
                     mailMsg.format(@"name",
                         receiptProductname,
                         $receiptTotalprice & " " & receiptValuta,
                         payment,
                         mainURL & "/basket/pdfreceipt/login",
                         supportEmail,
-                        title,
+                        userTitle,
                         receipt_nr),
                     filepath,
                     $receipt_nr)

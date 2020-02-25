@@ -91,7 +91,7 @@ function parseFloatSafe(strRaw) {
   if (strRaw == "") {
     return parseFloat("0.0");
   }
-  return parseFloat(strRaw.replace(/\./g, '').replace(',', '.'));
+  return parseFloat(strRaw); //.replace(/\./g, '').replace(',', '.'));
 }
 
 
@@ -235,6 +235,7 @@ function gotoAccept() {
       shippingName = radios[i].getAttribute("data-name");
       shippingPrice = radios[i].getAttribute("data-price");
       shippingVat = radios[i].getAttribute("data-vat");
+      break;
     }
   }
 
@@ -271,13 +272,13 @@ function gotoAccept() {
     document.getElementsByClassName("checkNumber")[0].innerHTML = parNumber;
   }
 
-  document.getElementById("checkPrice").innerHTML = (totalPriceWithoutVat + totalPriceVat) + " " + valuta;
-  document.getElementById("checkPriceVat").innerHTML = totalPriceVat + " " + valuta;
+  document.getElementById("checkPrice").innerHTML = (totalPriceWithoutVat + totalPriceVat).toFixed(2) + " " + valuta;
+  document.getElementById("checkPriceVat").innerHTML = totalPriceVat.toFixed(2) + " " + valuta;
   document.getElementById("checkShipping").innerHTML = shippingName;
-  document.getElementById("checkShippingPrice").innerHTML = (parseFloatSafe(shippingPrice) + parseFloatSafe(shippingVat)) + " " + valuta;
-  document.getElementById("checkShippingPriceVat").innerHTML = shippingVat + " " + valuta;
-  document.getElementById("checkPriceTotal").innerHTML = totalPriceAndShipping + " " + valuta;
-  document.getElementById("checkPriceTotalVat").innerHTML = (totalPriceVat + parseFloatSafe(shippingVat)) + " " + valuta;
+  document.getElementById("checkShippingPrice").innerHTML = (parseFloatSafe(shippingPrice) + parseFloatSafe(shippingVat)).toFixed(2) + " " + valuta;
+  document.getElementById("checkShippingPriceVat").innerHTML = parseFloatSafe(shippingVat).toFixed(2) + " " + valuta;
+  document.getElementById("checkPriceTotal").innerHTML = totalPriceAndShipping.toFixed(2) + " " + valuta;
+  document.getElementById("checkPriceTotalVat").innerHTML = (totalPriceVat + parseFloatSafe(shippingVat)).toFixed(2) + " " + valuta;
 
   document.getElementById("checkName").innerHTML = parName;
   document.getElementById("checkEmail").innerHTML = parEmail;
@@ -506,20 +507,21 @@ function updatePriceTotal() {
     if (radios[i].checked) {
       shippingPrice = radios[i].getAttribute("data-price");
       shippingVat = radios[i].getAttribute("data-vat");
+      break;
     }
   }
   priceTotal += parseFloatSafe(shippingPrice);
   priceTotal += parseFloatSafe(shippingVat);
 
-  document.getElementById("priceTotal").value = priceTotal;
+  document.getElementById("priceTotal").value = priceTotal.toFixed(2);
 }
 function updatePriceCount(el) {
   var id = el.getAttribute("id");
   var price = parseFloatSafe(el.getAttribute("data-rawPrice"));
   var vat = parseFloatSafe(el.getAttribute("data-rawVat"));
   var numbers = parseFloatSafe(el.value);
-  document.getElementById(el.getAttribute("data-id") + "-updatedPrice").value = price * numbers + vat * numbers;
-  document.getElementById(el.getAttribute("data-id") + "-updatedVat").value = vat * numbers;
+  document.getElementById(el.getAttribute("data-id") + "-updatedPrice").value = (price * numbers + vat * numbers).toFixed(2);
+  document.getElementById(el.getAttribute("data-id") + "-updatedVat").value = (vat * numbers).toFixed(2);
 
   document.getElementById(el.getAttribute("data-id") + "-checkNumber").innerHTML = numbers;
   updatePriceTotal();

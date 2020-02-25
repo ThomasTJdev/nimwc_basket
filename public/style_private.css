@@ -145,9 +145,12 @@ div#buyAccept #recaptcha {
 }
 div#buyAccept .price {
   text-align: right;
+  white-space: nowrap;
 }
 div#buyAccept .greyback {
   background: #c8c8c8;
+  vertical-align: middle;
+  padding: 5px;
 }
 div#buyCongratulations {
   margin-left: auto;

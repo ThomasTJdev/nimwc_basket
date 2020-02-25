@@ -17,6 +17,9 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 
 
 ## Changelog
+### v0.10
+* Parsing price values with 2 decimals
+
 ### v0.9
 * Changed prices from int to float
 * Redesign checkout - better overview and include valuta
