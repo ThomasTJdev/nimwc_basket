@@ -472,11 +472,10 @@ function buySuccess(xhr) {
     document.getElementById("buyAccept").style.display = "none";
     document.getElementById("buyBuyingHeading").style.display = "none";
 
-    document.getElementById("buyNow").style.maxWidth = "800px";
-
-
     document.getElementById("buyCongratulations").style.display = "block";
     document.getElementById("allReceipts").innerHTML = xhr.responseText;
+
+    document.getElementById("buyNow").style.setProperty("max-width", "800px", "important");
 
   } else {
     infoModal(xhr.responseText);

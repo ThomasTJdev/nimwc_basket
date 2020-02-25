@@ -17,6 +17,9 @@ This is a plugin for [Nim Website Creator](https://github.com/ThomasTJdev/nim_we
 
 
 ## Changelog
+### v1.0
+* Final CSS and JS adjustments
+
 ### v0.10
 * Parsing price values with 2 decimals
 

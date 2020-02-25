@@ -472,8 +472,10 @@
                     $receipt_nr)
 
     if getValue(db, sql("SELECT mailAdminBought FROM basket_settings;")) == "true":
+      # TODO https://github.com/ThomasTJdev/nim_websitecreator/issues/127
+      let userTitle = dict.getSectionValue("Server", "title")
       let adminMessage = """There's a new buyer!<br><br>$1 has bought $2 for $3.""" % [@"name", receiptProductname, $receiptTotalprice & " " & receiptValuta]
-      asyncCheck sendAdminMailNow("New buyer", adminMessage)
+      asyncCheck sendAdminMailNow(userTitle & ": New buyer", adminMessage)
 
     resp genBuyShowPdf(db, email, @"password", receipts)
 
