@@ -241,13 +241,14 @@
           supportEmail = dict.getSectionValue("SMTP", "SMTPEmailSupport")
           mailSubject  = basketLang("mailSubjectShipped")
           mailMsg      = basketLang("mailMsgShipped")
+          webUrl       = dict.getSectionValue("Server", "website")
 
         # TODO https://github.com/ThomasTJdev/nim_websitecreator/issues/127
         let userTitle = dict.getSectionValue("Server", "title")
 
         asyncCheck sendMailNow(
                   mailSubject.format(userTitle),
-                  mailMsg.format(userData[0], mainURL & "/basket/pdfreceipt/login",
+                  mailMsg.format(userData[0], webUrl & "/basket/pdfreceipt/login",
                   supportEmail, userTitle), userData[1].toLowerAscii())
 
     of "notshipped":
@@ -454,6 +455,7 @@
         supportEmail = dict.getSectionValue("SMTP", "SMTPEmailSupport")
         mailSubject  = basketLang("mailSubjectCongrats")
         mailMsg      = basketLang("mailMsgCongrats")
+        webUrl       = dict.getSectionValue("Server", "website")
 
       # TODO https://github.com/ThomasTJdev/nim_websitecreator/issues/127
       let userTitle = dict.getSectionValue("Server", "title")
@@ -464,7 +466,7 @@
                         receiptProductname,
                         $receiptTotalprice & " " & receiptValuta,
                         payment,
-                        mainURL & "/basket/pdfreceipt/login",
+                        webUrl & "/basket/pdfreceipt/login",
                         supportEmail,
                         userTitle,
                         receipt_nr),
